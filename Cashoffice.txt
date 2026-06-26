@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cash Office</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:    #0a1628;
+      --navy2:   #0f2040;
+      --gold:    #d4a843;
+      --gold2:   #f0c84a;
+      --green:   #1db954;
+      --red:     #e84040;
+      --blue:    #2979ff;
+      --muted:   #8899aa;
+      --border:  #1e3050;
+      --card:    #0d1f38;
+      --card2:   #112240;
+      --white:   #e8f0fe;
+      --text:    #ccd6f6;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Top Bar ── */
+    .topbar {
+      background: var(--navy2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .topbar-logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+    .topbar-logo span { color: var(--white); }
+    .topbar-badge {
+      background: var(--gold);
+      color: var(--navy);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 3px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .topbar-user {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .topbar-user strong { color: var(--gold); }
+    .btn-logout {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      height: calc(100vh - 56px);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    .sidebar-section {
+      padding: 0 16px;
+      margin-bottom: 24px;
+    }
+    .sidebar-label {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 0 4px;
+      margin-bottom: 8px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--muted);
+      transition: all 0.18s;
+      border: 1px solid transparent;
+    }
+    .nav-item:hover { background: var(--navy2); color: var(--white); }
+    .nav-item.active {
+      background: rgba(212, 168, 67, 0.12);
+      color: var(--gold);
+      border-color: rgba(212, 168, 67, 0.25);
+    }
+    .nav-item .icon { font-size: 15px; width: 20px; text-align: center; }
+
+    /* ── Office selector in sidebar ── */
+    .office-selector {
+      margin: 0 16px 20px;
+    }
+    .office-selector select {
+      width: 100%;
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      color: var(--white);
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      cursor: pointer;
+      outline: none;
+    }
+    .office-selector select:focus { border-color: var(--gold); }
+    .office-selector label {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    /* ── Main Content ── */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px;
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .page-subtitle { font-size: 13px; color: var(--muted); }
+
+    /* ── Stat Cards ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .stat-card.gold::before  { background: var(--gold); }
+    .stat-card.green::before { background: var(--green); }
+    .stat-card.red::before   { background: var(--red); }
+    .stat-card.blue::before  { background: var(--blue); }
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+    }
+    .stat-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1;
+    }
+    .stat-value.green { color: var(--green); }
+    .stat-value.red   { color: var(--red); }
+    .stat-value.gold  { color: var(--gold); }
+    .stat-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── Cards / Panels ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--white);
+    }
+    .card-body { padding: 20px; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 9px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'IBM Plex Sans', sans-serif;
+      transition: all 0.18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-gold {
+      background: var(--gold);
+      color: var(--navy);
+    }
+    .btn-gold:hover { background: var(--gold2); transform: translateY(-1px); }
+    .btn-green {
+      background: rgba(29, 185, 84, 0.15);
+      color: var(--green);
+      border: 1px solid rgba(29, 185, 84, 0.35);
+    }
+    .btn-green:hover { background: rgba(29, 185, 84, 0.25); }
+    .btn-red {
+      background: rgba(232, 64, 64, 0.12);
+      color: var(--red);
+      border: 1px solid rgba(232, 64, 64, 0.3);
+    }
+    .btn-red:hover { background: rgba(232, 64, 64, 0.22); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    /* ── Inputs ── */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      color: var(--white);
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--gold);
+    }
+    .form-input::placeholder { color: var(--muted); }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* ── Table ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table th {
+      background: var(--navy2);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(30, 48, 80, 0.6);
+      color: var(--text);
+    }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .data-table tr:last-child td { border-bottom: none; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-green  { background: rgba(29,185,84,0.15); color: var(--green); }
+    .badge-red    { background: rgba(232,64,64,0.12); color: var(--red); }
+    .badge-gold   { background: rgba(212,168,67,0.15); color: var(--gold); }
+    .badge-blue   { background: rgba(41,121,255,0.12); color: var(--blue); }
+    .badge-muted  { background: rgba(136,153,170,0.12); color: var(--muted); }
+
+    /* ── Amount display ── */
+    .amount-in  { color: var(--green); font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+    .amount-out { color: var(--red);   font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+    .amount-neutral { color: var(--gold); font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+    .mono { font-family: 'IBM Plex Mono', monospace; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+    }
+    .tab {
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.18s;
+      margin-bottom: -1px;
+    }
+    .tab:hover { color: var(--white); }
+    .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* ── Pages ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Messages ── */
+    .msg {
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg-success { background: rgba(29,185,84,0.12); color: var(--green); border: 1px solid rgba(29,185,84,0.3); }
+    .msg-error   { background: rgba(232,64,64,0.1);  color: var(--red);   border: 1px solid rgba(232,64,64,0.25); }
+    .msg-info    { background: rgba(41,121,255,0.1); color: #7aadff;      border: 1px solid rgba(41,121,255,0.25); }
+
+    /* ── Loading ── */
+    .loading-row td {
+      text-align: center;
+      padding: 30px !important;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .spinner-sm {
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Branch grid for report ── */
+    .branch-report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .branch-card {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      transition: border-color 0.18s;
+    }
+    .branch-card:hover { border-color: var(--gold); }
+    .branch-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .branch-card-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .branch-card-code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .branch-card-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(30,48,80,0.5);
+      font-size: 12px;
+    }
+    .branch-card-row:last-child { border-bottom: none; }
+    .branch-card-row .label { color: var(--muted); }
+
+    /* ── Transfer form layout ── */
+    .transfer-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .transfer-panel {
+      background: var(--navy2);
+      border-radius: 8px;
+      padding: 18px;
+      border: 1px solid var(--border);
+    }
+    .transfer-direction {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dir-in  { color: var(--green); }
+    .dir-out { color: var(--red);   }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state p { font-size: 13px; }
+
+    /* ── Date picker row ── */
+    .date-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .date-row input[type="date"] {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      color: var(--white);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      outline: none;
+    }
+    .date-row input[type="date"]:focus { border-color: var(--gold); }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 999;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      width: 420px;
+      max-width: 94vw;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: flex-end;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .transfer-panels { grid-template-columns: 1fr; }
+      .sidebar { width: 60px; }
+      .sidebar .nav-item span,
+      .sidebar-label,
+      .office-selector label,
+      .office-selector select { display: none; }
+      .sidebar .nav-item { justify-content: center; padding: 12px; }
+    }
+
+    /* ── Day Lock styles ── */
+    /* Nav item locked look */
+    .nav-item.day-locked {
+      opacity: 0.38;
+      cursor: not-allowed;
+      pointer-events: none;
+      position: relative;
+    }
+    .nav-item.day-locked::after {
+      content: '🔒';
+      font-size: 11px;
+      margin-left: auto;
+    }
+
+    /* Full-page overlay on locked pages */
+    .page-lock-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10,22,40,0.82);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+    }
+    .page-lock-overlay .lock-icon { font-size: 48px; margin-bottom: 16px; }
+    .page-lock-overlay .lock-msg  {
+      font-size: 16px; font-weight: 700; color: var(--gold);
+      margin-bottom: 8px; letter-spacing: 0.5px;
+    }
+    .page-lock-overlay .lock-sub  { font-size: 13px; color: var(--muted); }
+
+    /* Status bar below topbar */
+    #dayStatusBar {
+      background: var(--navy2);
+      border-bottom: 2px solid var(--border);
+      padding: 6px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 12px;
+    }
+    #dayStatusBar .dsb-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    #dayStatusBar .dsb-dot.open   { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    #dayStatusBar .dsb-dot.closed { background: var(--red);   box-shadow: 0 0 6px var(--red);   }
+    #dayStatusBar .dsb-dot.none   { background: var(--muted); }
+    #dayStatusBar .dsb-label { color: var(--text); font-weight: 600; }
+    #dayStatusBar .dsb-sub   { color: var(--muted); }
+    #dayStatusBar .dsb-btn {
+      margin-left: auto;
+      background: rgba(212,168,67,0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 4px 14px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    #dayStatusBar .dsb-btn:hover { background: rgba(212,168,67,0.28); }
+  </style>
+</head>
+<body>
+
+<!-- ── Top Bar ── -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">CASH<span>OFFICE</span></div>
+    <span class="topbar-badge" id="topbarBadge">ADMIN</span>
+  </div>
+  <div class="topbar-right">
+    <!-- ✅ Treasurer Wallet Display -->
+    <div id="treasurerWalletDisplay" style="display:none;background:#0d1f38;border:1px solid #d4a843;border-radius:8px;padding:4px 14px;font-size:13px;">
+      💰 Wallet: <strong id="treasurerWalletAmt" style="color:#d4a843;">₹0.00</strong>
+    </div>
+    <button class="btn-logout" onclick="openTreasurerChangePassword()" 
+  style="margin-right:8px; background:#6c3483;">🔒 Change Password</button>
+    <div class="topbar-user">Logged in as: <strong id="currentUserDisplay">—</strong></div>
+    <button class="btn-logout" onclick="location.reload()">Logout</button>
+  </div>
+</div>
+
+<!-- ── Treasurer Login Overlay ── -->
+<div id="trsLoginOverlay" style="display:flex;position:fixed;inset:0;background:rgba(10,22,40,0.97);z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
+  <div style="background:#0d1f38;border:1px solid #1e3050;border-radius:16px;padding:40px;width:360px;max-width:94vw;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:32px;margin-bottom:8px;">🏦</div>
+      <div style="font-size:20px;font-weight:700;color:#e8f0fe;letter-spacing:1px;">TREASURER LOGIN</div>
+      <div style="font-size:12px;color:#8899aa;margin-top:4px;">Cash Office Access</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Treasurer ID</label>
+      <input type="text" id="trsUserId" class="form-input" placeholder="Enter Treasurer ID" style="text-transform:uppercase;">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" id="trsPwd" class="form-input" placeholder="Enter Password" onkeydown="if(event.key==='Enter')doTreasurerLogin()">
+    </div>
+    <div id="trsError" style="display:none;color:#e84040;font-size:13px;margin-bottom:12px;padding:8px;background:rgba(232,64,64,0.1);border-radius:6px;"></div>
+    <button id="trsLoginBtn" class="btn btn-gold" onclick="doTreasurerLogin()" style="width:100%;padding:12px;font-size:15px;">Login</button>
+  </div>
+</div>
+
+<!-- ── Day Status Bar ── -->
+<div id="dayStatusBar" style="display:none;">
+  <span class="dsb-dot none" id="dsbDot"></span>
+  <span class="dsb-label" id="dsbLabel">Day Status: Unknown</span>
+  <span class="dsb-sub"   id="dsbSub"></span>
+  <button class="dsb-btn" onclick="showPage('dayend')">🔐 Day Begin / End</button>
+</div>
+
+<!-- ── Layout ── -->
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <div class="sidebar">
+    <div class="office-selector">
+      <label>Active Office</label>
+      <select id="officeSelector" onchange="onOfficeChange()">
+        <option value="">-- Select Office --</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigation</div>
+      <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard">
+        <span class="icon">📊</span><span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showPage('transfer')" data-page="transfer">
+        <span class="icon">💸</span><span>Cash Transfer</span>
+      </div>
+      <div class="nav-item" onclick="showPage('report')" data-page="report">
+        <span class="icon">📋</span><span>Daily Report</span>
+      </div>
+      <div class="nav-item" onclick="showPage('history')" data-page="history">
+        <span class="icon">🕐</span><span>History</span>
+      </div>
+      <div class="nav-item" onclick="showPage('cashbook')" data-page="cashbook">
+        <span class="icon">📒</span><span>Cash Book</span>
+      </div>
+    </div>
+<!-- Line 640 ke baad add karo — History ke neeche -->
+<div class="nav-item" onclick="showPage('pending')" data-page="pending">
+  <span class="icon">⏳</span>
+  <span>Pending ACK <span id="pendingBadge" style="background:#e84040;color:white;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px;display:none;">0</span></span>
+</div>
+<div class="nav-item" onclick="showPage('dayend')" data-page="dayend">
+  <span class="icon">🔐</span>
+  <span>Day Begin / End</span>
+</div>
+  </div><!-- /sidebar -->
+
+  <!-- ── Main ── -->
+  <div class="main">
+
+    <!-- ═══════════ DASHBOARD ═══════════ -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle" id="dashOfficeTitle">Select an office to view stats</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <input type="date" id="dashDate" onchange="loadDashboard()" style="background:var(--navy2);border:1px solid var(--border);color:var(--white);padding:8px 12px;border-radius:6px;font-size:13px;font-family:inherit;outline:none;">
+          <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div id="dashMsg" class="msg"></div>
+
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card gold">
+          <div class="stat-label">Total Branches</div>
+          <div class="stat-value" id="statBranches">—</div>
+          <div class="stat-sub">Mapped &amp; Active</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Cash Received</div>
+          <div class="stat-value green" id="statReceived">—</div>
+          <div class="stat-sub">From branches today</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Cash Sent</div>
+          <div class="stat-value red" id="statSent">—</div>
+          <div class="stat-sub">To branches today</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Net Position</div>
+          <div class="stat-value" id="statNet">—</div>
+          <div class="stat-sub">Received − Sent</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Branch-wise Summary</div>
+          <span id="dashDateLabel" style="font-size:12px;color:var(--muted);"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="dashBranchTable">
+            <thead>
+              <tr>
+                <th>Branch</th>
+                <th>Code</th>
+                <th>Sent to Office</th>
+                <th>Received from Office</th>
+                <th>Net Flow</th>
+                <th>Transactions</th>
+              </tr>
+            </thead>
+            <tbody id="dashBranchBody">
+              <tr class="loading-row"><td colspan="6">Select an office to load data</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ TRANSFER ═══════════ -->
+    <div id="page-transfer" class="page" style="position:relative;">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Cash Transfer</div>
+          <div class="page-subtitle">Send or receive cash between branches and Cash Office</div>
+        </div>
+      </div>
+
+      <div id="transferMsg" class="msg"></div>
+
+      <div class="transfer-panels">
+        <!-- Branch → Office -->
+        <div class="transfer-panel">
+          <div class="transfer-direction dir-in">
+            <span>↑</span> Branch → Cash Office
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Branch ne excess cash bheja (Office ko receive hua)</p>
+          <div class="form-group">
+            <label class="form-label">Branch</label>
+            <select id="txfBranch1" class="form-select">
+              <option value="">-- Select Branch --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Amount (₹)</label>
+            <input type="number" id="txfAmount1" class="form-input" placeholder="0.00" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Remarks</label>
+            <input type="text" id="txfRemarks1" class="form-input" placeholder="e.g. Excess deposit for the day">
+          </div>
+          <button class="btn btn-green" onclick="doTransfer('BRANCH_TO_OFFICE')">
+            ↑ Record Receipt
+          </button>
+        </div>
+
+        <!-- Office → Branch -->
+        <div class="transfer-panel">
+          <div class="transfer-direction dir-out">
+            <span>↓</span> Cash Office → Branch
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Office ne cash bheja branch ko (Cash supply)</p>
+          <div class="form-group">
+            <label class="form-label">Branch</label>
+            <select id="txfBranch2" class="form-select">
+              <option value="">-- Select Branch --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Amount (₹)</label>
+            <input type="number" id="txfAmount2" class="form-input" placeholder="0.00" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Remarks</label>
+            <input type="text" id="txfRemarks2" class="form-input" placeholder="e.g. Cash supply for operations">
+          </div>
+          <button class="btn btn-red" onclick="doTransfer('OFFICE_TO_BRANCH')">
+            ↓ Record Dispatch
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ DAILY REPORT ═══════════ -->
+    <div id="page-report" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Daily Report</div>
+          <div class="page-subtitle">Branch-wise cash movement for any day</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="printReport()">🖨️ Print</button>
+      </div>
+
+      <div class="date-row">
+        <input type="date" id="reportDate" class="form-input" style="width:180px;">
+        <button class="btn btn-gold" onclick="loadReport()">Generate Report</button>
+      </div>
+
+      <div id="reportMsg" class="msg"></div>
+      <div id="reportContainer"></div>
+    </div>
+    <!-- ═══════════ CASH BOOK ═══════════ -->
+    <div id="page-cashbook" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">📒 Treasurer Cash Book</div>
+          <div class="page-subtitle">Daily opening → receipts → payments → closing</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="printCashBook()">🖨️ Print</button>
+      </div>
+
+      <div class="date-row">
+        <input type="date" id="cashBookDate" class="form-input" style="width:180px;">
+        <button class="btn btn-gold" onclick="loadCashBook()">📒 Generate Cash Book</button>
+      </div>
+
+      <div id="cashBookMsg" class="msg"></div>
+      <div id="cashBookContainer"></div>
+    </div>
+
+    <!-- ═══════════ HISTORY ═══════════ -->
+    <div id="page-history" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Transaction History</div>
+          <div class="page-subtitle">All cash movements for this office</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <select id="histBranchFilter" class="form-select" style="width:180px;">
+              <option value="">All Branches</option>
+            </select>
+            <select id="histDaysFilter" class="form-select" style="width:130px;">
+              <option value="7">Last 7 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="90">Last 90 days</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="loadHistory()">🔍 Load</button>
+          </div>
+          <span id="histCount" style="font-size:12px;color:var(--muted);"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Txn ID</th>
+                <th>Date</th>
+                <th>Branch</th>
+                <th>Direction</th>
+                <th>Amount</th>
+                <th>Remarks</th>
+                <th>By</th>
+              </tr>
+            </thead>
+            <tbody id="histBody">
+              <tr class="loading-row"><td colspan="7">Click Load to view history</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+<!-- History div ke baad, /main se pehle add karo -->
+
+<!-- ═══════════ PENDING ACK ═══════════ -->
+<div id="page-pending" class="page" style="position:relative;">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Pending Acknowledgements</div>
+      <div class="page-subtitle">Branch se aaya cash confirm karo</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="loadPendingAck()">🔄 Refresh</button>
+  </div>
+  <div id="pendingMsg" class="msg"></div>
+
+  <!-- Branch → Office Pending (Treasurer ACK kare) -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <div class="card-title">🏦 Branch → Office (Aapko ACK karna hai)</div>
+      <span id="pendingB2OCount" style="font-size:12px;color:var(--muted);"></span>
+    </div>
+    <div id="pendingB2OList">
+      <div class="empty-state"><div class="icon">⏳</div><p>Load karo...</p></div>
+    </div>
+  </div>
+  </div><!-- /page-pending -->
+
+  <!-- ═══════════ DAY BEGIN / END ═══════════ -->
+  <div id="page-dayend" class="page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">🔐 Day Begin / End</div>
+        <div class="page-subtitle">Har din ka opening aur closing balance save karo</div>
+      </div>
+    </div>
+
+    <div id="dayendMsg" class="msg"></div>
+
+    <!-- Today status card -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><div class="card-title">📅 Today's Status</div></div>
+      <div id="dayendStatusBox" style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">
+        Loading...
+      </div>
+    </div>
+
+    <!-- Begin / End buttons -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+
+      <!-- Day Begin -->
+      <div class="card">
+        <div class="card-header" style="color:var(--green);">📂 Day Begin</div>
+        <div style="padding:16px;">
+          <p style="color:var(--muted);font-size:13px;margin-bottom:16px;line-height:1.6;">
+            Din ki shuruat mein click karo.<br>
+            Aaj ka <strong style="color:var(--white);">Opening Balance</strong> save hoga.<br>
+            <span style="color:var(--green);font-size:12px;">Sab transactions enable ho jaayenge.</span>
+          </p>
+          <button class="btn btn-gold" id="dayBeginBtn" onclick="doDayBegin()"
+            style="width:100%;padding:14px;font-size:15px;letter-spacing:0.5px;">
+            📂 Day Begin
+          </button>
+          <div id="dayBeginResult" style="margin-top:12px;font-size:13px;display:none;padding:10px;border-radius:6px;background:rgba(255,255,255,0.05);"></div>
+        </div>
+      </div>
+
+      <!-- Day End -->
+      <div class="card">
+        <div class="card-header" style="color:var(--gold);">🔒 Day End</div>
+        <div style="padding:16px;">
+          <p style="color:var(--muted);font-size:13px;margin-bottom:16px;line-height:1.6;">
+            Din khatam hone pe click karo.<br>
+            Aaj ka <strong style="color:var(--white);">Closing Balance</strong> save hoga.<br>
+            <span style="color:var(--red);font-size:12px;">Sab transactions band ho jaayenge.</span>
+          </p>
+          <button class="btn btn-gold" id="dayEndBtn" onclick="doDayEnd()"
+            style="width:100%;padding:14px;font-size:15px;background:linear-gradient(135deg,var(--gold),var(--gold2));letter-spacing:0.5px;">
+            🔒 Day End
+          </button>
+          <div id="dayEndResult" style="margin-top:12px;font-size:13px;display:none;padding:10px;border-radius:6px;background:rgba(255,255,255,0.05);"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Balance log table -->
+    <div class="card">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="card-title">📋 Balance Log (Last 30 Days)</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadDayEndLog()">🔄 Refresh</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th style="text-align:right;">Opening (₹)</th>
+              <th style="text-align:right;">Closing (₹)</th>
+              <th style="text-align:center;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="dayendLogBody">
+            <tr class="loading-row"><td colspan="4">Refresh karo log dekhne ke liye</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /page-dayend -->
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ── Confirm Modal ── -->
+<div id="confirmModal" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <div class="modal-title" id="confirmTitle">Confirm</div>
+    <div id="confirmBody" style="font-size:14px;color:var(--text);margin-bottom:8px;line-height:1.7;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-gold" id="confirmOkBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+    // ✅ XSS Protection
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+        .replace(/'/g,'&#x27;');
+    }
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+var currentUserId = new URLSearchParams(window.location.search).get('userId') ||
+                    new URLSearchParams(window.location.search).get('user') || 'ADMIN';
+var selectedOfficeId = '';
+var mappedBranches   = [];
+// ── Day Status — 'NONE' | 'OPEN' | 'CLOSED' ──────────────────
+// NONE    = Day Begin nahi hua aaj
+// OPEN    = Day Begin ho chuka, Day End nahi
+// CLOSED  = Day End ho chuka aaj
+var currentDayStatus    = 'NONE';
+var currentSessionToken = '';
+
+// ── Treasurer Login ───────────────────────
+function doTreasurerLogin() {
+  var uid   = document.getElementById('trsUserId').value.trim();
+  var pwd   = document.getElementById('trsPwd').value.trim();
+  var errEl = document.getElementById('trsError');
+  var btn   = document.getElementById('trsLoginBtn');
+
+  if (!uid || !pwd) { errEl.textContent = 'Please enter User ID and Password'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Logging in...';
+  errEl.style.display = 'none';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      btn.disabled = false; btn.textContent = 'Login';
+      if (res && res.success) {
+        currentUserId = uid.toUpperCase();
+        currentSessionToken = res.token || '';   // ✅ Store session token
+        document.getElementById('trsLoginOverlay').style.display = 'none';
+        document.getElementById('currentUserDisplay').textContent = currentUserId;
+        document.getElementById('topbarBadge').textContent = 'TREASURER';
+
+        if (res.officeId) {
+          selectedOfficeId = res.officeId;
+          // ✅ After login: only load treasurer's own assigned office
+          loadTreasurerOfficeOnly(res.officeId, res.officeName);
+        } else {
+          // No office assigned — show warning
+          document.getElementById('officeSelector').innerHTML =
+            '<option value="">⚠️ No office assigned</option>';
+          alert('⚠️ No Cash Office is assigned to your account.\nPlease contact Admin to assign an office.');
+        }
+
+        // ✅ Load treasurer wallet balance
+        loadTreasurerWallet();
+        // ✅ DAY LOCK: Login ke baad status check karo
+        setTimeout(function() { checkAndApplyDayLock(); }, 300);
+        // ✅ Holiday warning — non-blocking banner
+        if (res.isHoliday && res.holidayWarning) {
+          setTimeout(function() {
+            var banner = document.createElement('div');
+            banner.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);' +
+              'background:#e67e22;color:white;padding:16px 28px;border-radius:12px;' +
+              'z-index:9999;font-size:14px;font-weight:bold;text-align:center;' +
+              'box-shadow:0 4px 20px rgba(0,0,0,0.4);max-width:90vw;line-height:1.6;';
+            banner.innerHTML = res.holidayWarning.replace(/\n/g, '<br>');
+            var closeBtn = document.createElement('div');
+            closeBtn.innerHTML = '&#10005;';
+            closeBtn.style.cssText = 'display:inline-block;margin-left:16px;cursor:pointer;font-size:18px;vertical-align:middle;opacity:0.8;';
+            closeBtn.onclick = function() { banner.remove(); };
+            banner.appendChild(closeBtn);
+            document.body.appendChild(banner);
+            setTimeout(function() { if (banner.parentElement) banner.remove(); }, 8000);
+          }, 700);
+        }
+
+      } else {
+        errEl.textContent = res ? res.message : 'Login failed';
+        errEl.style.display = 'block';
+      }
+    })
+    .withFailureHandler(function(err) {
+      btn.disabled = false; btn.textContent = 'Login';
+      errEl.textContent = 'Server error. Try again.';
+      errEl.style.display = 'block';
+    })
+    .treasurerLogin(uid, pwd);
+}
+
+// ── Init ──────────────────────────────────
+window.addEventListener('load', function() { // ✅ FIX: window.onload → addEventListener
+  // ✅ FIX: Login overlay always visible on load — no TREASURER_MODE timing issue
+  // trsLoginOverlay starts as display:flex in HTML
+  // It gets hidden only after successful login (doTreasurerLogin success handler)
+  document.getElementById('topbarBadge').textContent = 'TREASURER';
+
+  // Setup date fields and load offices (runs in background, behind login overlay)
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('dashDate').value     = today;
+  document.getElementById('reportDate').value   = today;
+  document.getElementById('cashBookDate').value = today;
+  loadAllOffices();
+});
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function fmt(n) {
+  return '₹' + (parseFloat(n) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function showMsg(id, text, type) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'msg msg-' + type;
+  el.innerHTML = text;
+  el.style.display = 'block';
+  if (type !== 'error') setTimeout(function() { el.style.display = 'none'; }, 4000);
+}
+
+// ✅ FIX: Removed 'branches' reference — page nahi hai
+function showPage(name) {
+  // Day lock check — locked pages par navigate nahi kar sakte jab OPEN nahi
+  if (LOCKED_PAGES.indexOf(name) !== -1 && currentDayStatus !== 'OPEN') {
+    // Still show the page but overlay will block — also force overlay refresh
+    _setPageOverlay(name, true);
+  }
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  var page = document.getElementById('page-' + name);
+  var nav  = document.querySelector('[data-page="' + name + '"]');
+  if (!page || !nav) return;
+  page.classList.add('active');
+  nav.classList.add('active');
+  if (name === 'history')   loadHistory();
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'pending')   loadPendingAck();
+  if (name === 'cashbook')  loadCashBook();
+  if (name === 'dayend')    loadDayEndStatus();
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+// ══════════════════════════════════════════
+// DAY LOCK — Core functions
+// ══════════════════════════════════════════
+
+// Pages jinpe action hota hai — lock hone chahiye
+var LOCKED_PAGES = ['transfer', 'pending'];
+
+// Check day status from backend and apply lock/unlock
+function checkAndApplyDayLock() {
+  if (!currentUserId) return;
+  google.script.run
+    .withSuccessHandler(function(res) {
+      var status = (res && res.success && res.status) ? res.status : 'NONE';
+      applyDayLock(status);
+    })
+    .withFailureHandler(function() {
+      applyDayLock('NONE'); // Safe — lock on failure
+    })
+    .getTreasurerTodayStatus(currentUserId);
+}
+
+// Apply lock state to whole UI
+function applyDayLock(status) {
+  currentDayStatus = status;
+
+  // ── Status bar update ──
+  var bar   = document.getElementById('dayStatusBar');
+  var dot   = document.getElementById('dsbDot');
+  var label = document.getElementById('dsbLabel');
+  var sub   = document.getElementById('dsbSub');
+  var today = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+
+  bar.style.display = 'flex';
+  dot.className = 'dsb-dot';
+
+  if (status === 'OPEN') {
+    dot.classList.add('open');
+    label.textContent = '✅ Day Open';
+    label.style.color = 'var(--green)';
+    sub.textContent   = today + ' — Transactions allowed';
+  } else if (status === 'CLOSED') {
+    dot.classList.add('closed');
+    label.textContent = '🔒 Day Closed';
+    label.style.color = 'var(--red)';
+    sub.textContent   = today + ' — Day End ho chuka hai. Kal Day Begin karo.';
+  } else {
+    dot.classList.add('none');
+    label.textContent = '⚠️ Day Begin Nahi Hua';
+    label.style.color = 'var(--gold)';
+    sub.textContent   = today + ' — Pehle Day Begin karo';
+  }
+
+  // ── Nav items lock/unlock ──
+  LOCKED_PAGES.forEach(function(pageName) {
+    var navEl = document.querySelector('[data-page="' + pageName + '"]');
+    if (!navEl) return;
+    if (status === 'OPEN') {
+      navEl.classList.remove('day-locked');
+    } else {
+      navEl.classList.add('day-locked');
+    }
+  });
+
+  // ── Page overlays ──
+  LOCKED_PAGES.forEach(function(pageName) {
+    _setPageOverlay(pageName, status !== 'OPEN');
+  });
+}
+
+// Add or remove lock overlay on a specific page
+function _setPageOverlay(pageName, locked) {
+  var page = document.getElementById('page-' + pageName);
+  if (!page) return;
+
+  // Remove existing overlay if any
+  var existing = page.querySelector('.page-lock-overlay');
+  if (existing) existing.remove();
+
+  if (!locked) return;
+
+  var msg, sub;
+  if (currentDayStatus === 'CLOSED') {
+    msg = '🔒 Aaj ka Din Band Ho Chuka Hai';
+    sub = 'Day End ho chuka hai — kal Day Begin karo';
+  } else {
+    msg = '⚠️ Day Begin Nahi Hua';
+    sub = 'Transactions ke liye pehle Day Begin karo';
+  }
+
+  var overlay = document.createElement('div');
+  overlay.className = 'page-lock-overlay';
+  overlay.innerHTML =
+    '<div class="lock-icon">🔐</div>' +
+    '<div class="lock-msg">' + msg + '</div>' +
+    '<div class="lock-sub">' + sub + '</div>' +
+    '<button onclick="showPage(\'dayend\')" style="margin-top:20px;background:var(--gold);color:var(--navy);' +
+    'border:none;padding:10px 28px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">' +
+    '🔐 Day Begin / End</button>';
+  page.appendChild(overlay);
+}
+
+// Guard function — call before any action
+// Returns true if action is allowed, false otherwise
+function isDayOpen(showAlert) {
+  if (currentDayStatus === 'OPEN') return true;
+  if (showAlert !== false) {
+    var msg = currentDayStatus === 'CLOSED'
+      ? '🔒 Aaj ka din band ho chuka hai!\n\nDay End ke baad koi transaction nahi ho sakta.\nKal Day Begin karo.'
+      : '⚠️ Day Begin nahi hua!\n\nTransaction ke liye pehle Day Begin karo.\n\n"Day Begin / End" section mein jao.';
+    alert(msg);
+  }
+  return false;
+}
+
+// ✅ NEW: Load ONLY the office assigned to this treasurer (after login)
+function loadTreasurerOfficeOnly(officeId, officeName) {
+  var sel = document.getElementById('officeSelector');
+  sel.innerHTML = '';
+  var opt = document.createElement('option');
+  opt.value = officeId;
+  opt.textContent = officeId + ' — ' + (officeName || officeId);
+  sel.appendChild(opt);
+  selectedOfficeId = officeId;
+  // Hide the dropdown selector since only 1 office
+  var selectorDiv = document.querySelector('.office-selector');
+  if (selectorDiv) {
+    selectorDiv.querySelector('label').textContent = 'Your Office';
+    sel.style.pointerEvents = 'none'; // non-clickable — only one option
+    sel.style.opacity = '0.8';
+  }
+  onOfficeChange();
+}
+
+// ✅ NEW: Load Treasurer Wallet Balance
+function loadTreasurerWallet() {
+  if (!currentUserId) return;
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (res && res.success) {
+        var amt = res.balance || 0;
+        document.getElementById('treasurerWalletAmt').textContent =
+          '₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        document.getElementById('treasurerWalletDisplay').style.display = 'block';
+      }
+    })
+    .withFailureHandler(function() {})
+    .getTreasurerWalletBalance(currentUserId);
+}
+
+// ✅ UPDATED: loadAllOffices — still works for admin mode (non-treasurer)
+function loadAllOffices() {
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res || !res.success) return;
+      var sel  = document.getElementById('officeSelector');
+      var prev = sel.value;
+      sel.innerHTML = '<option value="">-- Select Office --</option>';
+
+      if (!res.offices || res.offices.length === 0) return;
+
+      res.offices.forEach(function(o) {
+        sel.innerHTML += '<option value="' + escapeHtml(o.officeId) + '">' + escapeHtml(o.officeId) + ' — ' + escapeHtml(o.officeName) + '</option>'; // ✅ XSS fix
+      });
+
+      if (prev) { sel.value = prev; if (sel.value) onOfficeChange(); }
+      else if (res.offices.length === 1) { sel.value = res.offices[0].officeId; onOfficeChange(); }
+    })
+    .withFailureHandler(function(e) { console.error(e); })
+    .getAllCashOffices();
+}
+
+function onOfficeChange() {
+  selectedOfficeId = document.getElementById('officeSelector').value;
+  if (!selectedOfficeId) { mappedBranches = []; return; }
+  loadBranchesIntoSelects();
+  loadDashboard();
+  loadPendingAckCount();
+}
+
+function loadBranchesIntoSelects() {
+  if (!selectedOfficeId) return;
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res || !res.success) return;
+      mappedBranches = res.branches || [];
+      var sel1 = document.getElementById('txfBranch1');
+      var sel2 = document.getElementById('txfBranch2');
+      var selH = document.getElementById('histBranchFilter');
+      [sel1, sel2].forEach(function(s) { s.innerHTML = '<option value="">-- Select Branch --</option>'; });
+      selH.innerHTML = '<option value="">All Branches</option>';
+      mappedBranches.forEach(function(b) {
+        var opt = '<option value="' + escapeHtml(b.branchCode) + '">' + escapeHtml(b.branchCode) + (b.branchName ? ' — ' + escapeHtml(b.branchName) : '') + '</option>';
+        sel1.innerHTML += opt;
+        sel2.innerHTML += opt;
+        selH.innerHTML += opt;
+      });
+    })
+    .withFailureHandler(function(e) { console.error(e); })
+    .getCashOfficeBranches(selectedOfficeId);
+}
+// Naya function:
+function loadPendingAckCount() {
+  if (!selectedOfficeId) return;
+  google.script.run
+    .withSuccessHandler(function(res) {
+      updatePendingBadge(res && res.success ? (res.count || 0) : 0);
+    })
+    .withFailureHandler(function() {})
+    .getPendingBranchToOfficeTxns(selectedOfficeId);
+}
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+function loadDashboard() {
+  if (!selectedOfficeId) {
+    showMsg('dashMsg', 'Please select an office from the sidebar.', 'info');
+    return;
+  }
+  var date = document.getElementById('dashDate').value;
+  document.getElementById('dashDateLabel').textContent = 'Date: ' + (date || 'Today');
+  ['statBranches','statReceived','statSent','statNet'].forEach(function(id) {
+    document.getElementById(id).textContent = '…';
+  });
+  document.getElementById('dashBranchBody').innerHTML =
+    '<tr class="loading-row"><td colspan="6"><span class="spinner-sm"></span> Loading...</td></tr>';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res) { showMsg('dashMsg', 'No response from server', 'error'); return; }
+      if (!res.success) { showMsg('dashMsg', res.message, 'error'); return; }
+
+      document.getElementById('dashOfficeTitle').textContent = 'Office: ' + res.officeId + '  •  ' + res.reportDateDisplay;
+      document.getElementById('statBranches').textContent  = res.totalBranches;
+      document.getElementById('statReceived').textContent  = fmt(res.totalReceived);
+      document.getElementById('statSent').textContent      = fmt(res.totalSent);
+
+      var net   = res.netPosition || 0;
+      var netEl = document.getElementById('statNet');
+      netEl.textContent = fmt(Math.abs(net));
+      netEl.className   = 'stat-value ' + (net >= 0 ? 'green' : 'red');
+
+      var rows = '';
+      (res.branches || []).forEach(function(b) {
+        var netFlow = b.netFlow || 0;
+        rows +=
+          '<tr>' +
+          '<td style="font-weight:600;color:var(--white);">' + (b.branchName || b.branchCode) + '</td>' +
+          '<td><span class="mono" style="color:var(--gold);">' + b.branchCode + '</span></td>' +
+          '<td><span class="amount-in">' + fmt(b.sentToOffice) + '</span></td>' +
+          '<td><span class="amount-out">' + fmt(b.receivedFromOffice) + '</span></td>' +
+          '<td><span class="' + (netFlow >= 0 ? 'amount-in' : 'amount-out') + '">' + (netFlow >= 0 ? '+' : '') + fmt(netFlow) + '</span></td>' +
+          '<td><span class="badge badge-muted">' + b.txnCount + '</span></td>' +
+          '</tr>';
+      });
+      if (!rows) rows = '<tr class="loading-row"><td colspan="6">No transactions for this date</td></tr>';
+      document.getElementById('dashBranchBody').innerHTML = rows;
+    })
+    .withFailureHandler(function(e) {
+      showMsg('dashMsg', 'Error: ' + e.message, 'error');
+      document.getElementById('dashBranchBody').innerHTML = '<tr class="loading-row"><td colspan="6">Error loading data</td></tr>';
+    })
+    .getCashOfficeReport(selectedOfficeId, date);
+}
+
+// ══════════════════════════════════════════
+// TRANSFER
+// ══════════════════════════════════════════
+function doTransfer(direction) {
+  // ✅ DAY LOCK — Day Open nahi hai to transfer block
+  if (!isDayOpen()) return;
+
+  if (!selectedOfficeId) { showMsg('transferMsg', 'Please select an office first.', 'error'); return; }
+
+  var isBtoO  = (direction === 'BRANCH_TO_OFFICE');
+  var branchSel = document.getElementById(isBtoO ? 'txfBranch1' : 'txfBranch2').value;
+  var amtRaw    = parseFloat(document.getElementById(isBtoO ? 'txfAmount1' : 'txfAmount2').value);
+  var remarks   = document.getElementById(isBtoO ? 'txfRemarks1' : 'txfRemarks2').value.trim();
+
+  if (!branchSel)           { showMsg('transferMsg', 'Branch select karo.', 'error'); return; }
+  if (!amtRaw || amtRaw <= 0) { showMsg('transferMsg', 'Valid amount enter karo.', 'error'); return; }
+
+  var branchName = document.getElementById(isBtoO ? 'txfBranch1' : 'txfBranch2').selectedOptions[0].text;
+  var dirLabel   = isBtoO ? 'Branch → Office' : 'Office → Branch';
+
+  document.getElementById('confirmTitle').textContent = 'Confirm Transfer';
+  document.getElementById('confirmBody').innerHTML =
+    '<b>Direction:</b> ' + dirLabel + '<br>' +
+    '<b>Branch:</b> ' + branchName + '<br>' +
+    '<b>Amount:</b> <span class="mono" style="color:var(--gold);font-size:16px;">' + fmt(amtRaw) + '</span><br>' +
+    (remarks ? '<b>Remarks:</b> ' + remarks : '');
+
+  document.getElementById('confirmOkBtn').onclick = function() {
+    closeModal('confirmModal');
+    execTransfer(direction, branchSel, amtRaw, remarks, isBtoO);
+  };
+  document.getElementById('confirmModal').style.display = 'flex';
+}
+
+function execTransfer(direction, branchCode, amount, remarks, isBtoO) {
+  var panel = document.querySelector(isBtoO ? '.dir-in' : '.dir-out').closest('.transfer-panel');
+  var btn   = panel.querySelector('.btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-sm"></span> Processing...';
+
+  var btnLabel = isBtoO ? '↑ Record Receipt' : '↓ Record Dispatch';
+
+  function onSuccess(res) {
+    btn.disabled = false;
+    btn.innerHTML = btnLabel;
+    if (!res) { showMsg('transferMsg', 'No response', 'error'); return; }
+    if (res.success) {
+      var msg = '✅ ' + res.message;
+      if (res.txnId) msg += ' (Txn: ' + res.txnId + ')';
+      if (res.newWalletBalance !== undefined) {
+        msg += ' | 💰 Wallet: ₹' + res.newWalletBalance.toLocaleString('en-IN', {minimumFractionDigits:2});
+      }
+      showMsg('transferMsg', msg, 'success');
+      document.getElementById(isBtoO ? 'txfAmount1'  : 'txfAmount2').value  = '';
+      document.getElementById(isBtoO ? 'txfRemarks1' : 'txfRemarks2').value = '';
+      loadDashboard();
+      loadTreasurerWallet();
+    } else {
+      showMsg('transferMsg', '❌ ' + res.message, 'error');
+    }
+  }
+
+  function onError(e) {
+    btn.disabled = false;
+    btn.innerHTML = btnLabel;
+    showMsg('transferMsg', '❌ Error: ' + e.message, 'error');
+  }
+
+  // FIX: Correct argument order for each backend function
+  // branchSendCashToOffice(officeId, branchCode, amount, remarks, processedBy)
+  // officeSendCashToBranchPending(treasurerId, officeId, branchCode, amount, remarks)
+  if (isBtoO) {
+    google.script.run
+      .withSuccessHandler(onSuccess)
+      .withFailureHandler(onError)
+      .branchSendCashToOffice(selectedOfficeId, branchCode, amount, remarks, currentUserId);
+  } else {
+    google.script.run
+      .withSuccessHandler(onSuccess)
+      .withFailureHandler(onError)
+      .officeSendCashToBranchPending(currentUserId, selectedOfficeId, branchCode, amount, remarks);
+  }
+}
+
+// ══════════════════════════════════════════
+// DAILY REPORT
+// ══════════════════════════════════════════
+function loadReport() {
+  if (!selectedOfficeId) { showMsg('reportMsg', 'Please select an office first.', 'error'); return; }
+  var date = document.getElementById('reportDate').value;
+  document.getElementById('reportContainer').innerHTML =
+    '<div style="text-align:center;padding:30px;color:var(--muted);"><span class="spinner-sm"></span> Generating report...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res || !res.success) {
+        document.getElementById('reportContainer').innerHTML =
+          '<div class="empty-state"><div class="icon">📋</div><p>' + (res ? res.message : 'No data') + '</p></div>';
+        return;
+      }
+      renderReport(res);
+    })
+    .withFailureHandler(function(e) {
+      showMsg('reportMsg', '❌ ' + e.message, 'error');
+      document.getElementById('reportContainer').innerHTML = '';
+    })
+    .getCashOfficeReport(selectedOfficeId, date);
+}
+
+function renderReport(res) {
+  var html =
+    '<div style="background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;">' +
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">' +
+    '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Office</div>' +
+    '<div style="font-weight:700;color:var(--gold);">' + res.officeId + '</div></div>' +
+    '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Date</div>' +
+    '<div style="font-weight:700;color:var(--white);">' + res.reportDateDisplay + '</div></div>' +
+    '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Total Received</div>' +
+    '<div class="amount-in" style="font-size:15px;">' + fmt(res.totalReceived) + '</div></div>' +
+    '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Total Sent</div>' +
+    '<div class="amount-out" style="font-size:15px;">' + fmt(res.totalSent) + '</div></div>' +
+    '</div></div>';
+
+  html += '<div class="branch-report-grid">';
+  (res.branches || []).forEach(function(b) {
+    var net = b.netFlow || 0;
+    html +=
+      '<div class="branch-card">' +
+      '<div class="branch-card-header">' +
+      '<div><div class="branch-card-name">' + (b.branchName || b.branchCode) + '</div>' +
+      '<div class="branch-card-code">' + b.branchCode + '</div></div>' +
+      '<span class="badge ' + (b.txnCount > 0 ? 'badge-gold' : 'badge-muted') + '">' + b.txnCount + ' txn</span>' +
+      '</div>' +
+      '<div class="branch-card-row"><span class="label">Sent to Office</span><span class="amount-in">' + fmt(b.sentToOffice) + '</span></div>' +
+      '<div class="branch-card-row"><span class="label">Received</span><span class="amount-out">' + fmt(b.receivedFromOffice) + '</span></div>' +
+      '<div class="branch-card-row"><span class="label">Net Flow</span><span class="' + (net >= 0 ? 'amount-in' : 'amount-out') + '">' + (net >= 0 ? '+' : '') + fmt(net) + '</span></div>' +
+      '</div>';
+  });
+  html += '</div>';
+  document.getElementById('reportContainer').innerHTML = html;
+}
+
+function printReport() { window.print(); }
+
+// ══════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════
+function loadHistory() {
+  if (!selectedOfficeId) return;
+  var branch = document.getElementById('histBranchFilter').value;
+  var days   = document.getElementById('histDaysFilter').value;
+  document.getElementById('histBody').innerHTML =
+    '<tr class="loading-row"><td colspan="7"><span class="spinner-sm"></span> Loading...</td></tr>';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res || !res.success) {
+        document.getElementById('histBody').innerHTML = '<tr class="loading-row"><td colspan="7">Error loading history</td></tr>';
+        return;
+      }
+      var txns = res.transactions || [];
+      document.getElementById('histCount').textContent = txns.length + ' transactions';
+      var rows = '';
+      txns.forEach(function(t) {
+        var isBtoO = t.direction === 'BRANCH_TO_OFFICE';
+        rows +=
+          '<tr>' +
+          '<td><span class="mono" style="font-size:11px;color:var(--muted);">' + t.txnId + '</span></td>' +
+          '<td style="color:var(--text);">' + t.date + '</td>' +
+          '<td><span class="mono" style="color:var(--gold);">' + t.branch + '</span></td>' +
+          '<td><span class="badge ' + (isBtoO ? 'badge-green' : 'badge-red') + '">' +
+            (isBtoO ? '↑ Branch→Office' : '↓ Office→Branch') + '</span></td>' +
+          '<td><span class="' + (isBtoO ? 'amount-in' : 'amount-out') + '">' + fmt(t.amount) + '</span></td>' +
+          '<td style="color:var(--muted);font-size:12px;">' + (t.remarks || '—') + '</td>' +
+          '<td style="color:var(--muted);font-size:12px;">' + (t.by || '—') + '</td>' +
+          '</tr>';
+      });
+      if (!rows) rows = '<tr class="loading-row"><td colspan="7">No transactions found</td></tr>';
+      document.getElementById('histBody').innerHTML = rows;
+    })
+    .withFailureHandler(function(e) {
+      document.getElementById('histBody').innerHTML =
+        '<tr class="loading-row"><td colspan="7">Error: ' + e.message + '</td></tr>';
+    })
+    .getCashOfficeTxnHistory(selectedOfficeId, branch || null, parseInt(days));
+}
+// ══════════════════════════════════════════
+// PENDING ACK
+// ══════════════════════════════════════════
+function loadPendingAck() {
+  if (!selectedOfficeId) {
+    showMsg('pendingMsg', 'Pehle office select karo.', 'error');
+    return;
+  }
+
+  // ── Branch → Office pending (Treasurer ACK kare) ──
+  document.getElementById('pendingB2OList').innerHTML =
+    '<div style="text-align:center;padding:30px;color:var(--muted);"><span class="spinner-sm"></span> Loading...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      var list = document.getElementById('pendingB2OList');
+      var countEl = document.getElementById('pendingB2OCount');
+
+      if (!res || !res.success || !res.transactions || res.transactions.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="icon">✅</div><p>Koi pending nahi</p></div>';
+        countEl.textContent = '0 pending';
+        updatePendingBadge(0);
+        return;
+      }
+
+      countEl.textContent = res.transactions.length + ' pending';
+      updatePendingBadge(res.transactions.length);
+
+      var html = '<div style="display:flex;flex-direction:column;gap:12px;padding:16px;">';
+      res.transactions.forEach(function(t) {
+        html +=
+          '<div style="background:var(--navy2);border:1px solid var(--gold);border-radius:8px;padding:16px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+              '<div>' +
+                '<div style="font-size:11px;color:var(--muted);text-transform:uppercase;">From Branch</div>' +
+                '<div style="font-size:16px;font-weight:700;color:var(--gold);">' + t.branchCode + '</div>' +
+              '</div>' +
+              '<div style="text-align:right;">' +
+                '<div style="font-size:11px;color:var(--muted);">Amount</div>' +
+                '<div style="font-size:24px;font-weight:700;color:var(--green);">₹' + (parseFloat(t.amount)||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;font-size:12px;">' +
+              '<div><span style="color:var(--muted);">Txn ID: </span><span class="mono" style="color:var(--text);">' + t.txnId + '</span></div>' +
+              '<div><span style="color:var(--muted);">Date: </span><span style="color:var(--text);">' + t.date + '</span></div>' +
+              '<div><span style="color:var(--muted);">By: </span><span style="color:var(--text);">' + (t.by||'—') + '</span></div>' +
+              (t.remarks ? '<div><span style="color:var(--muted);">Note: </span><span style="color:var(--text);">' + t.remarks + '</span></div>' : '') +
+            '</div>' +
+            '<button onclick="doAckBranchToOffice(\'' + t.txnId + '\', ' + (t.amount||0) + ', \'' + t.branchCode + '\')" ' +
+              'style="width:100%;background:var(--green);color:var(--navy);border:none;border-radius:6px;padding:10px;font-size:14px;font-weight:700;cursor:pointer;">' +
+              '✅ Acknowledge Receipt from ' + t.branchCode +
+            '</button>' +
+          '</div>';
+      });
+      html += '</div>';
+      list.innerHTML = html;
+    })
+    .withFailureHandler(function(e) {
+      document.getElementById('pendingB2OList').innerHTML =
+        '<div class="empty-state"><div class="icon">❌</div><p>Error: ' + e.message + '</p></div>';
+    })
+    .getPendingBranchToOfficeTxns(selectedOfficeId);
+
+  // ── Office → Branch pending (Supervisor ACK ka wait) ──
+  document.getElementById('pendingO2BBody').innerHTML =
+    '<tr class="loading-row"><td colspan="6"><span class="spinner-sm"></span> Loading...</td></tr>';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      var body    = document.getElementById('pendingO2BBody');
+      var countEl = document.getElementById('pendingO2BCount');
+
+      if (!res || !res.success || !res.transactions || res.transactions.length === 0) {
+        body.innerHTML = '<tr class="loading-row"><td colspan="6">Koi pending nahi</td></tr>';
+        countEl.textContent = '0 awaiting';
+        return;
+      }
+
+      countEl.textContent = res.transactions.length + ' awaiting supervisor ACK';
+      var rows = '';
+      res.transactions.forEach(function(t) {
+        rows +=
+          '<tr>' +
+          '<td><span class="mono" style="font-size:11px;color:var(--muted);">' + t.txnId + '</span></td>' +
+          '<td>' + t.date + '</td>' +
+          '<td><span class="mono" style="color:var(--gold);">' + t.branchCode + '</span></td>' +
+          '<td><span class="amount-out">₹' + (parseFloat(t.amount)||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span></td>' +
+          '<td style="color:var(--muted);font-size:12px;">' + (t.remarks||'—') + '</td>' +
+          '<td><span class="badge badge-gold">⏳ Awaiting ACK</span></td>' +
+          '</tr>';
+      });
+      body.innerHTML = rows;
+    })
+    .withFailureHandler(function(e) {
+      document.getElementById('pendingO2BBody').innerHTML =
+        '<tr class="loading-row"><td colspan="6">Error: ' + e.message + '</td></tr>';
+    })
+    .getCashOfficeTxnHistory(selectedOfficeId, null, 30); // pending O2B history se dikhao
+}
+
+function doAckBranchToOffice(txnId, amount, branchCode) {
+  // ✅ DAY LOCK — Day Open nahi hai to ACK block
+  if (!isDayOpen()) return;
+
+  document.getElementById('confirmTitle').textContent = 'Acknowledge Cash Receipt';
+  document.getElementById('confirmBody').innerHTML =
+    '<b>Branch:</b> ' + branchCode + '<br>' +
+    '<b>Amount:</b> <span class="mono" style="color:var(--green);font-size:18px;">₹' +
+      (parseFloat(amount)||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span><br>' +
+    '<b>Txn ID:</b> <span class="mono" style="font-size:11px;color:var(--muted);">' + txnId + '</span><br><br>' +
+    '<span style="color:var(--green);font-size:12px;">✅ Ye cash Cash Office mein received mark ho jaayega.</span>';
+
+  document.getElementById('confirmOkBtn').onclick = function() {
+    closeModal('confirmModal');
+    _execAckBranchToOffice(txnId, amount, branchCode);
+  };
+  document.getElementById('confirmModal').style.display = 'flex';
+}
+
+function _execAckBranchToOffice(txnId, amount, branchCode) {
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res) { showMsg('pendingMsg', 'No response', 'error'); return; }
+      if (res.success) {
+        showMsg('pendingMsg',
+          '✅ ₹' + (parseFloat(amount)||0).toLocaleString('en-IN') +
+          ' from Branch ' + branchCode + ' acknowledged! (Txn: ' + txnId + ')',
+          'success'
+        );
+
+        // ✅ FIX: Response mein newWalletBalance seedha aa raha hai — turant display karo
+        if (res.newWalletBalance !== undefined) {
+          var el = document.getElementById('treasurerWalletAmt');
+          if (el) {
+            el.textContent = '₹' + parseFloat(res.newWalletBalance).toLocaleString('en-IN', {minimumFractionDigits: 2});
+          }
+          document.getElementById('treasurerWalletDisplay').style.display = 'block';
+        }
+
+        loadPendingAck();      // refresh list
+        loadDashboard();       // dashboard update
+        loadTreasurerWallet(); // background sync bhi karo
+      } else {
+        showMsg('pendingMsg', '❌ ' + res.message, 'error');
+      }
+    })
+    .withFailureHandler(function(e) {
+      showMsg('pendingMsg', '❌ Error: ' + e.message, 'error');
+    })
+    .officeAcknowledgeCashFromBranch(currentUserId, txnId);
+}
+
+function updatePendingBadge(count) {
+  var badge = document.getElementById('pendingBadge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+// ══════════════════════════════════════════
+// TREASURER CASH BOOK
+// ══════════════════════════════════════════
+function loadCashBook() {
+  var date = document.getElementById('cashBookDate').value;
+  if (!date) { showMsg('cashBookMsg', 'Please select a date.', 'error'); return; }
+
+  document.getElementById('cashBookContainer').innerHTML =
+    '<div style="text-align:center;padding:40px;color:var(--muted);"><span class="spinner-sm"></span> Generating cash book...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res || !res.success) {
+        document.getElementById('cashBookContainer').innerHTML =
+          '<div class="empty-state"><div class="icon">📒</div><p>' + (res ? res.message : 'Error') + '</p></div>';
+        return;
+      }
+      renderCashBook(res);
+    })
+    .withFailureHandler(function(e) {
+      showMsg('cashBookMsg', '❌ ' + e.message, 'error');
+      document.getElementById('cashBookContainer').innerHTML = '';
+    })
+    .getTreasurerCashBook(currentUserId, date);
+}
+
+function renderCashBook(d) {
+  var matchColor = d.balanceMatch ? 'var(--green)' : 'var(--red)';
+  var matchIcon  = d.balanceMatch ? '✅' : '❌';
+
+  var html =
+    '<div id="cashBookPrintArea" style="background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:24px;">' +
+
+    // ── Header ──
+    '<div style="text-align:center;border-bottom:2px solid var(--gold);padding-bottom:14px;margin-bottom:20px;">' +
+      '<div style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Treasurer Cash Book</div>' +
+      '<div style="font-size:20px;font-weight:700;color:var(--gold);">' + d.officeId + '</div>' +
+      '<div style="font-size:13px;color:var(--muted);margin-top:4px;">Date: <strong style="color:var(--white);">' + d.reportDate + '</strong>' +
+      '&nbsp;&nbsp;|&nbsp;&nbsp;Treasurer: <strong style="color:var(--white);">' + d.treasurerId + '</strong></div>' +
+    '</div>' +
+
+    // ── Opening Balance ──
+    _cbRow('🏦 Opening Balance', d.openingBalance, 'var(--gold)', true) +
+
+    // ── Receipts ──
+    '<div style="margin:16px 0 6px;font-size:11px;letter-spacing:2px;color:var(--green);text-transform:uppercase;border-bottom:1px solid var(--green);padding-bottom:4px;">📥 Receipts — Cash from Branches</div>';
+
+  if (d.receipts && d.receipts.length > 0) {
+    d.receipts.forEach(function(r) {
+      html += _cbDetailRow(
+        '↑ ' + escapeHtml(r.branchCode||'') + (r.remarks ? ' — ' + escapeHtml(r.remarks) : ''),
+        r.amount, 'var(--green)',
+        r.status === 'COMPLETED' ? '✅' : '⏳'
+      );
+    });
+  } else {
+    html += '<div style="font-size:12px;color:var(--muted);padding:8px 0;">No receipts for this date</div>';
+  }
+
+  html += _cbRow('Total Received', d.totalReceived, 'var(--green)', true) +
+
+    // ── Payments ──
+    '<div style="margin:16px 0 6px;font-size:11px;letter-spacing:2px;color:var(--red);text-transform:uppercase;border-bottom:1px solid var(--red);padding-bottom:4px;">📤 Payments — Cash to Branches</div>';
+
+  if (d.payments && d.payments.length > 0) {
+    d.payments.forEach(function(p) {
+      html += _cbDetailRow(
+        '↓ ' + p.branchCode + (p.remarks ? ' — ' + p.remarks : ''),
+        p.amount, 'var(--red)',
+        p.status === 'COMPLETED' ? '✅' : '⏳ Pending ACK'
+      );
+    });
+  } else {
+    html += '<div style="font-size:12px;color:var(--muted);padding:8px 0;">No payments for this date</div>';
+  }
+
+  html += _cbRow('Total Sent', d.totalSent, 'var(--red)', true) +
+
+    // ── Closing Balance ──
+    '<div style="margin-top:20px;padding:16px;background:rgba(212,168,67,0.08);border:1px solid var(--gold);border-radius:8px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+        '<span style="font-weight:700;font-size:15px;color:var(--gold);">🏁 Closing Balance</span>' +
+        '<span style="font-size:22px;font-weight:700;color:var(--gold);">' + fmt(d.closingBalance) + '</span>' +
+      '</div>' +
+      '<div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center;">' +
+        '<span style="font-size:13px;color:var(--muted);">' + matchIcon + ' Wallet Balance Check</span>' +
+        '<span style="font-size:15px;font-weight:700;color:' + matchColor + ';">' + fmt(d.walletBalance) + '</span>' +
+      '</div>' +
+      (!d.balanceMatch
+        ? '<div style="color:var(--red);font-size:12px;margin-top:8px;">⚠️ Difference: ' + fmt(d.difference) + ' — Please verify transactions</div>'
+        : '<div style="color:var(--green);font-size:12px;margin-top:8px;">✅ Wallet balance matches Cash Book closing balance</div>'
+      ) +
+    '</div>' +
+
+    // ── Summary box ──
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;">' +
+      _cbStat('Opening', d.openingBalance, 'var(--gold)') +
+      _cbStat('+ Received', d.totalReceived, 'var(--green)') +
+      _cbStat('− Sent', d.totalSent, 'var(--red)') +
+    '</div>' +
+
+    '</div>'; // /cashBookPrintArea
+
+  document.getElementById('cashBookContainer').innerHTML = html;
+}
+
+function _cbRow(label, amount, color, bold) {
+  return '<div style="display:flex;justify-content:space-between;align-items:center;' +
+    'padding:9px 12px;background:' + (bold ? 'rgba(255,255,255,0.04)' : 'transparent') + ';border-radius:6px;margin-bottom:3px;">' +
+    '<span style="font-size:13px;font-weight:' + (bold ? '700' : '400') + ';color:var(--text);">' + label + '</span>' +
+    '<span style="font-size:' + (bold ? '15' : '13') + 'px;font-weight:' + (bold ? '700' : '400') + ';color:' + color + ';">' + fmt(amount) + '</span>' +
+    '</div>';
+}
+
+function _cbDetailRow(label, amount, color, badge) {
+  return '<div style="display:flex;justify-content:space-between;align-items:center;' +
+    'padding:7px 12px;border-left:3px solid ' + color + ';margin-bottom:4px;border-radius:0 6px 6px 0;background:rgba(255,255,255,0.02);">' +
+    '<span style="font-size:12px;color:var(--text);">' + label +
+      (badge ? ' <span style="font-size:10px;color:var(--muted);">(' + badge + ')</span>' : '') +
+    '</span>' +
+    '<span style="font-size:13px;font-weight:600;color:' + color + ';">' + fmt(amount) + '</span>' +
+    '</div>';
+}
+
+function _cbStat(label, amount, color) {
+  return '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;">' +
+    '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">' + label + '</div>' +
+    '<div style="font-size:16px;font-weight:700;color:' + color + ';">' + fmt(amount) + '</div>' +
+    '</div>';
+}
+
+function printCashBook() {
+  var content = document.getElementById('cashBookPrintArea');
+  if (!content) { alert('Pehle Cash Book generate karo.'); return; }
+  var w = window.open('', '_blank');
+  w.document.write(
+    '<html><head><title>Treasurer Cash Book</title>' +
+    '<style>body{font-family:Arial,sans-serif;background:#0a1628;color:#ccd6f6;padding:20px;}' +
+    '.no-print{display:none;}</style></head><body>' +
+    content.innerHTML + '</body></html>'
+  );
+  w.document.close();
+  w.focus();
+  setTimeout(function(){ w.print(); w.close(); }, 500);
+}
+
+// ══════════════════════════════════════════
+// DAY BEGIN / END — JS Functions
+// ══════════════════════════════════════════
+function loadDayEndStatus() {
+  var box = document.getElementById('dayendStatusBox');
+  if (!box) return;
+  box.innerHTML = '<span style="color:var(--muted);">Checking...</span>';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res || !res.success) {
+        box.innerHTML = '<span style="color:var(--red);">Could not load status. Retry karo.</span>';
+        return;
+      }
+      var today  = new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+      var status = res.status || null;
+      var color  = status === 'CLOSED' ? 'var(--red)'   : status === 'OPEN' ? 'var(--green)' : 'var(--gold)';
+      var icon   = status === 'CLOSED' ? '🔒'           : status === 'OPEN' ? '✅'           : '⚠️';
+      var lbl    = status === 'CLOSED' ? 'Day CLOSED'   : status === 'OPEN' ? 'Day OPEN'     : 'Day Begin Nahi Hua';
+
+      box.innerHTML =
+        '<div style="font-size:36px;margin-bottom:10px;">' + icon + '</div>' +
+        '<div style="font-size:16px;font-weight:700;color:' + color + ';margin-bottom:6px;">' + lbl + '</div>' +
+        '<div style="font-size:12px;color:var(--muted);">Date: ' + today + '</div>' +
+        (res.openingBalance !== undefined
+          ? '<div style="margin-top:10px;font-size:13px;color:var(--text);">Opening: <strong style="color:var(--gold);">' + fmt(res.openingBalance) + '</strong>' +
+            (res.status === 'CLOSED' ? '&nbsp;&nbsp;|&nbsp;&nbsp;Closing: <strong style="color:var(--green);">' + fmt(res.closingBalance) + '</strong>' : '') + '</div>'
+          : '<div style="margin-top:8px;font-size:12px;color:var(--muted);">Aaj ka koi record nahi — Day Begin karo</div>'
+        );
+
+      // ✅ FIX: applyDayLock sirf tab call karo jab status clearly milta ho
+      // 'NONE' ya null pe override mat karo — Day Begin ke baad OPEN state protect karo
+      if (status === 'OPEN' || status === 'CLOSED') {
+        applyDayLock(status);
+      }
+      // Agar status null/undefined hai (no record yet) aur currentDayStatus already OPEN/CLOSED
+      // hai toh override mat karo — woh state valid hai
+      else if (currentDayStatus === 'NONE') {
+        applyDayLock('NONE');
+      }
+
+      loadDayEndLog();
+    })
+    .withFailureHandler(function(e) {
+      box.innerHTML = '<span style="color:var(--red);">Error: ' + escapeHtml(e.message||'') + '</span>';
+    })
+    .getTreasurerTodayStatus(currentUserId);
+}
+
+function doDayBegin() {
+  if (!currentUserId) { alert('Please login first.'); return; }
+  if (!confirm('Day Begin karo?\n\nAaj ka opening balance permanently save hoga.\nSab transactions enable ho jaayenge.')) return;
+
+  var btn = document.getElementById('dayBeginBtn');
+  btn.disabled = true; btn.textContent = '⏳ Saving...';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      btn.disabled = false; btn.textContent = '📂 Day Begin';
+      var el = document.getElementById('dayBeginResult');
+      el.style.display = 'block';
+      if (res && res.success) {
+        el.style.color = 'var(--green)';
+        el.innerHTML   = res.message.replace(/\n/g, '<br>');
+        // ✅ FIX: status field se lock set karo
+        // alreadySaved case mein status 'OPEN' ya 'CLOSED' aata hai
+        // fresh Day Begin mein status field nahi hota — default OPEN
+        var lockStatus = res.status || 'OPEN';
+        applyDayLock(lockStatus);
+        loadDayEndLog();
+      } else {
+        el.style.color = 'var(--red)';
+        el.textContent = res ? res.message : 'Error occurred';
+      }
+    })
+    .withFailureHandler(function(e) {
+      btn.disabled = false; btn.textContent = '📂 Day Begin';
+      showMsg('dayendMsg', '❌ ' + e.message, 'error');
+    })
+    .saveTreasurerOpeningBalance(currentUserId);
+}
+
+function doDayEnd() {
+  if (!currentUserId) { alert('Please login first.'); return; }
+  if (currentDayStatus !== 'OPEN') {
+    alert('⚠️ Day Begin pehle karo!\n\nDay End tabhi ho sakta hai jab Day Begin hua ho.');
+    return;
+  }
+  if (!confirm('Day End karo?\n\nAaj ka closing balance permanently save hoga.\nSab transactions band ho jaayenge.\n\nYeh action confirm karo.')) return;
+
+  var btn = document.getElementById('dayEndBtn');
+  btn.disabled = true; btn.textContent = '⏳ Saving...';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      btn.disabled = false; btn.textContent = '🔒 Day End';
+      var el = document.getElementById('dayEndResult');
+      el.style.display = 'block';
+      if (res && res.success) {
+        el.style.color = 'var(--green)';
+        el.innerHTML   = res.message.replace(/\n/g, '<br>');
+        // ✅ Lock all transactions immediately
+        applyDayLock('CLOSED');
+        loadDayEndStatus();
+        loadDashboard();
+      } else {
+        el.style.color = 'var(--red)';
+        el.textContent = res ? res.message : 'Error occurred';
+      }
+    })
+    .withFailureHandler(function(e) {
+      btn.disabled = false; btn.textContent = '🔒 Day End';
+      showMsg('dayendMsg', '❌ ' + e.message, 'error');
+    })
+    .saveTreasurerClosingBalance(currentUserId);
+}
+
+function loadDayEndLog() {
+  var tbody = document.getElementById('dayendLogBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="4"><span class="spinner-sm"></span> Loading...</td></tr>';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (!res || !res.success || !res.records || res.records.length === 0) {
+        tbody.innerHTML = '<tr class="loading-row"><td colspan="4">Koi record nahi mila</td></tr>';
+        return;
+      }
+      var rows = '';
+      res.records.forEach(function(r) {
+        var sc = r.status === 'CLOSED' ? 'var(--green)' : 'var(--gold)';
+        rows +=
+          '<tr>' +
+          '<td>' + r.date + '</td>' +
+          '<td style="text-align:right;color:var(--gold);">' + fmt(r.opening) + '</td>' +
+          '<td style="text-align:right;color:' + (r.status === 'CLOSED' ? 'var(--green)' : 'var(--muted)') + ';">' +
+            (r.status === 'CLOSED' ? fmt(r.closing) : '—') + '</td>' +
+          '<td style="text-align:center;"><span style="color:' + sc + ';font-size:11px;font-weight:700;">' + r.status + '</span></td>' +
+          '</tr>';
+      });
+      tbody.innerHTML = rows;
+    })
+    .withFailureHandler(function(e) {
+      tbody.innerHTML = '<tr class="loading-row"><td colspan="4">Error: ' + escapeHtml(e.message||'') + '</td></tr>';
+    })
+    .getTreasurerBalanceLog(currentUserId);
+}
+// ── Treasurer Change Password ──────────────────
+function openTreasurerChangePassword() {
+  var oldP = prompt('Enter CURRENT password:');
+  if (!oldP) return;
+  var newP = prompt('Enter NEW password (min 4 chars):');
+  if (!newP || newP.length < 4) { alert('❌ Password too short!'); return; }
+  var cnf  = prompt('CONFIRM new password:');
+  if (newP !== cnf) { alert('❌ Passwords do not match!'); return; }
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (res.success) {
+        alert('✅ Password changed successfully!\n\nPlease login again with new password.');
+        location.reload();
+      } else {
+        alert('❌ ' + res.message);
+      }
+    })
+    .withFailureHandler(function(e) { alert('❌ Error: ' + e.message); })
+    .changePasswordWithOldVerify(currentUserId, oldP, newP, currentSessionToken);
+}
+</script>
+</body>
+</html>

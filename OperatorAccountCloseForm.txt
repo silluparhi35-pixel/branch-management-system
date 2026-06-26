@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OPERATOR - Account Close</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .header {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 { font-size: 28px; margin-bottom: 10px; }
+    .badge {
+      background: #ff9800;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 25px;
+      font-size: 13px;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 10px;
+    }
+    .content { padding: 35px; }
+    .alert {
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      border-left: 5px solid;
+      font-size: 14px;
+    }
+    .alert-warning {
+      background: #fff3cd;
+      border-color: #ff9800;
+      color: #856404;
+    }
+    .alert-danger {
+      background: #f8d7da;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+    .form-group { margin-bottom: 25px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: #fa709a;
+      outline: none;
+    }
+    .form-group input[readonly] { background: #f8f9fa; color: #6c757d; }
+    .required::after { content: ' *'; color: #dc3545; }
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      color: white;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:disabled { 
+      background: #dc3545;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .error { background: #f8d7da; color: #721c24; }
+    .success { background: #d4edda; color: #155724; }
+    .account-info {
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border-left: 4px solid #2196F3;
+      display: none;
+    }
+    .account-info strong { color: #1976D2; }
+    .loan-warning {
+      background: #ffebee;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border-left: 4px solid #f44336;
+      display: none;
+    }
+    .loan-warning strong { color: #c62828; }
+    @keyframes shake {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  25% { transform: translateX(-50%) translateY(-5px); }
+  75% { transform: translateX(-50%) translateY(5px); }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 id="headerTitle">🔒 Account Close</h1>
+      <div class="badge">🔒 OPERATOR MODE - PENDING APPROVAL</div>
+    </div>
+
+    <div class="content">
+      <div class="alert alert-warning">
+        <strong>⚠️ IMPORTANT:</strong> This closure request will be submitted for supervisor approval.
+      </div>
+
+      <div class="alert alert-danger">
+        <strong>🚫 CRITICAL:</strong> Account cannot be closed if there are active loans. All loans must be closed first.
+      </div>
+
+      <form id="closeForm">
+        <div class="form-group">
+          <label class="required">🏦 Account Number</label>
+          <select id="accountNo" required>
+            <option value="">-- Select Account --</option>
+          </select>
+        </div>
+
+        <div id="accountInfo" class="account-info">
+          <div><strong>Member Name:</strong> <span id="memberName"></span></div>
+          <div><strong>Account Type:</strong> <span id="accountType"></span></div>
+          <div><strong>Current Balance:</strong> ₹<span id="currentBalance"></span></div>
+          <div><strong>Has Active Loans:</strong> <span id="hasLoan"></span></div>
+          <div><strong>Loan Outstanding:</strong> ₹<span id="loanOutstanding"></span></div>
+        </div>
+
+        <div id="loanWarning" class="loan-warning">
+          <strong>🚫 ACCOUNT CLOSURE BLOCKED</strong><br><br>
+          <div id="loanWarningText"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="required">💰 Settlement Amount</label>
+          <input type="number" id="settlementAmount" placeholder="Enter final settlement amount" step="0.01" required>
+        </div>
+
+        <div class="form-group">
+          <label class="required">📅 Closure Date</label>
+          <input type="date" id="closeDate" required readonly style="background:#f8f9fa;color:#6c757d;cursor:not-allowed;">
+        </div>
+
+        <div class="form-group">
+          <label>📧 Email</label>
+          <input type="email" id="email" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>🆔 User ID</label>
+          <input type="text" id="userId" readonly>
+        </div>
+
+        <div id="errorMsg" class="message error"></div>
+        <div id="successMsg" class="message success"></div>
+
+        <button type="submit" class="btn" id="submitBtn">
+          📤 Submit for Supervisor Approval
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ✅ FIXED INIT: Single clean load event — no race conditions, no dead code
+    let operatorId    = null;
+    let operatorToken = null;
+    let userBranchCode = '';
+
+    window.addEventListener('load', function() {
+      // Step 1: Get operatorId — URL param first, then window inject fallback
+      operatorId    = new URLSearchParams(window.location.search).get('operator') || (window.OPERATOR_ID || null);
+      operatorToken = (new URLSearchParams(window.location.search).get('token'))
+                      ? decodeURIComponent(new URLSearchParams(window.location.search).get('token'))
+                      : (window.OPERATOR_TOKEN || null);
+
+      if (!operatorId) {
+        alert('❌ Operator ID not found!\n\nPlease close this window and login again.');
+        window.close();
+        return;
+      }
+
+      // Step 2: Show operator ID in header
+      const header = document.getElementById('headerTitle');
+      if (header) {
+        header.innerHTML += '<br><small style="font-size:14px;opacity:0.9;">Operator: ' + operatorId + '</small>';
+      }
+
+      // Step 3: Fetch branch code + show branch banner
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            userBranchCode = result.branchCode || '';
+            const bannerDiv = document.createElement('div');
+            bannerDiv.style.cssText = 'background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:8px 20px;text-align:center;font-size:13px;';
+            bannerDiv.innerHTML = '<strong>Operator:</strong> ' + operatorId + ' &nbsp;|&nbsp; <strong>Branch:</strong> ' + userBranchCode;
+            const container = document.querySelector('.container') || document.body;
+            container.insertBefore(bannerDiv, container.firstChild);
+          }
+        })
+        .getOperatorDetails(operatorId);
+
+      // Step 4: Load form data
+      initFormData();
+    });
+
+    function initFormData() {
+      // ✅ FIX: Set today's date on load
+      document.getElementById('closeDate').valueAsDate = new Date();
+      document.getElementById('closeDate').readOnly = true;
+      loadActiveAccounts();
+    }
+
+
+
+    function loadActiveAccounts() {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.success) {
+            const select = document.getElementById('accountNo');
+            res.accounts.forEach(acc => {
+              const option = document.createElement('option');
+              option.value = acc.accountNo;
+              option.textContent = acc.accountNo + ' - ' + acc.name;
+              option.dataset.name            = acc.name;
+              option.dataset.accountType     = acc.accountType;
+              option.dataset.hasLoan         = acc.hasLoan;
+              option.dataset.loanOutstanding = acc.loanOutstanding || 0;
+              option.dataset.userId          = acc.userId || '';
+              option.dataset.email           = acc.email  || '';
+              select.appendChild(option);
+            });
+          }
+        })
+        .getActiveAccountsForClose(operatorId);
+    }
+
+    document.getElementById('accountNo').addEventListener('change', function() {
+      const selected = this.options[this.selectedIndex];
+      if (selected.value) {
+        loadAccountDetails(selected.value);
+        document.getElementById('userId').value = selected.dataset.userId || '';
+        document.getElementById('email').value  = selected.dataset.email  || '';
+      } else {
+        document.getElementById('accountInfo').style.display = 'none';
+        document.getElementById('loanWarning').style.display = 'none';
+        document.getElementById('errorMsg').style.display = 'none';
+        // Reset button
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '📤 Submit for Supervisor Approval';
+        submitBtn.style.background = '';
+        submitBtn.style.cursor = 'pointer';
+      }
+    });
+
+    function loadAccountDetails(accountNo) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.success) {
+            const acc = res.account;
+            const submitBtn = document.getElementById('submitBtn');
+            const errorDiv = document.getElementById('errorMsg');
+            const loanWarningDiv = document.getElementById('loanWarning');
+            const loanWarningText = document.getElementById('loanWarningText');
+            
+            document.getElementById('memberName').textContent = acc.name;
+            document.getElementById('accountType').textContent = acc.accountType;
+            document.getElementById('currentBalance').textContent = acc.currentBalance.toFixed(2);
+            document.getElementById('hasLoan').textContent = acc.hasLoan ? 'YES ⚠️' : 'NO ✅';
+            document.getElementById('loanOutstanding').textContent = acc.loanOutstanding.toFixed(2);
+            
+            // Pre-fill settlement amount with current balance
+            document.getElementById('settlementAmount').value = acc.currentBalance;
+            
+            document.getElementById('accountInfo').style.display = 'block';
+            
+            // ✅ DISABLE SUBMIT if account has active loan
+            if (acc.hasLoan || acc.loanOutstanding > 0) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = '🚫 Cannot Close - Active Loan Exists';
+              submitBtn.style.background = '#dc3545';
+              submitBtn.style.cursor = 'not-allowed';
+              
+              loanWarningText.innerHTML = 
+                'This account has an <strong>active loan</strong> of <strong>₹' + acc.loanOutstanding.toFixed(2) + '</strong><br><br>' +
+                '✋ All loans must be <strong>fully closed</strong> before account closure.<br><br>' +
+                '📋 <strong>Action Required:</strong><br>' +
+                '1. Close the outstanding loan first<br>' +
+                '2. Wait for loan settlement confirmation<br>' +
+                '3. Then retry account closure';
+              
+              loanWarningDiv.style.display = 'block';
+              errorDiv.style.display = 'none';
+              
+              // Disable settlement amount field
+              document.getElementById('settlementAmount').disabled = true;
+              document.getElementById('closeDate').disabled = true;
+            } else {
+              submitBtn.disabled = false;
+              submitBtn.textContent = '📤 Submit for Supervisor Approval';
+              submitBtn.style.background = '';
+              submitBtn.style.cursor = 'pointer';
+              loanWarningDiv.style.display = 'none';
+              errorDiv.style.display = 'none';
+              
+              // Enable fields
+              document.getElementById('settlementAmount').disabled = false;
+              document.getElementById('closeDate').disabled = false;
+            }
+          }
+        })
+        .getAccountDetailsForClose(accountNo);
+    }
+
+    document.getElementById('closeForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Double-check loan status before submission
+      const submitBtn = document.getElementById('submitBtn');
+      if (submitBtn.disabled) {
+        showError('❌ Cannot submit: Account has active loan');
+        return;
+      }
+      
+      submitClosure();
+    });
+
+    function submitClosure() {
+      const btn = document.getElementById('submitBtn');
+      const errorDiv = document.getElementById('errorMsg');
+      const successDiv = document.getElementById('successMsg');
+
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+
+      // ✅ CRITICAL: Verify operator ID before submission
+      if (!operatorId || operatorId === 'null' || operatorId === 'undefined') {
+        showError('❌ SUBMISSION BLOCKED: Operator ID is missing!\n\nPlease close this form and login again.');
+        return;
+      }
+
+      const closeData = {
+        accountNo:        document.getElementById('accountNo').value,
+        name:             document.getElementById('memberName').textContent,
+        settlementAmount: parseFloat(document.getElementById('settlementAmount').value),
+        closeDate:        document.getElementById('closeDate').value,
+        email:            document.getElementById('email').value.trim(),
+        userId:           document.getElementById('userId').value.trim(),
+        branchCode:       userBranchCode
+      };
+
+      if (!closeData.accountNo || !closeData.settlementAmount) {
+        showError('❌ Please fill required fields');
+        return;
+      }
+
+      if (closeData.settlementAmount < 0) {
+        showError('❌ Settlement amount cannot be negative');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Submitting...';
+
+      console.log('📤 Submitting account close with Operator ID:', operatorId);
+      console.log('📋 Close Data:', closeData);
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.textContent = '📤 Submit for Supervisor Approval';
+
+          if (res.success) {
+            showSuccess(`
+              <strong>✅ ${res.message}</strong><br><br>
+              <strong>Entry ID:</strong> ${res.entryId}<br>
+              <strong>Submitted by:</strong> ${operatorId}<br><br>
+              <strong>Status:</strong> Pending supervisor approval
+            `);
+            document.getElementById('closeForm').reset();
+            document.getElementById('closeDate').valueAsDate = new Date();
+      document.getElementById('closeDate').readOnly = true; // ✅ No backdate
+            document.getElementById('accountInfo').style.display = 'none';
+            document.getElementById('loanWarning').style.display = 'none';
+          } else {
+            showError('❌ ' + res.message);
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.textContent = '📤 Submit for Supervisor Approval';
+          showError('❌ System Error: ' + err.message + '\n\nOperator ID: ' + operatorId);
+        })
+        // ✅ FIXED: operatorId PEHLE, closeData BAAD MEIN
+        .operatorSubmitAccountClose(operatorId, closeData, operatorToken);
+    }
+
+    function showError(msg) {
+      document.getElementById('errorMsg').innerHTML = msg;
+      document.getElementById('errorMsg').style.display = 'block';
+      document.getElementById('successMsg').style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+      document.getElementById('successMsg').innerHTML = msg;
+      document.getElementById('successMsg').style.display = 'block';
+      document.getElementById('errorMsg').style.display = 'none';
+    }
+
+  </script>
+</body>
+</html>

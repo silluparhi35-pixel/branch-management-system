@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FUTURE LIFE - Forms System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #5B4B8A 0%, #764BA2 50%, #C94B8C 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    /* A4 Paper Size */
+    @media screen {
+      .container {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+      }
+    }
+    
+    @page {
+      size: A4;
+      margin: 8mm;
+    }
+    
+    .selection-screen {
+      max-width: 800px;
+      margin: 50px auto;
+      text-align: center;
+    }
+    
+    .selection-title {
+      color: white;
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 50px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .card-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+    
+    .selection-card {
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    .selection-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 25px rgba(255,215,0,0.4);
+    }
+    
+    .card-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    
+    .card-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #5B4B8A;
+      margin-bottom: 10px;
+    }
+    
+    .card-desc {
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .container {
+      max-width: 210mm;
+      margin: 0 auto;
+      background: white;
+      padding: 8mm;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: none;
+      box-sizing: border-box;
+    }
+    
+    .container.active {
+      display: block;
+    }
+    
+    .back-button {
+      background: #6c757d;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    
+    .back-button:hover {
+      background: #5a6268;
+    }
+    
+    .form-header {
+      text-align: center;
+      border: 2px dashed #000;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+    }
+    
+    .company-name {
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    
+    .logo-circle {
+      width: 55px;
+      height: 55px;
+      border: 2px solid #333;
+      border-radius: 50%;
+      margin: 0 auto 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: bold;
+      color: #666;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .tagline {
+      font-size: 11px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    
+    .office-address {
+      font-size: 8px;
+      border-top: 1px dotted #000;
+      padding-top: 6px;
+    }
+    
+    .form-title {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      text-decoration: underline;
+      margin: 8px 0 8px;
+    }
+    
+    .form-section {
+      position: relative;
+    }
+    
+    .photo-box {
+      position: absolute;
+      right: 5px;
+      top: 0;
+      width: 95px;
+      height: 115px;
+      border: 1px solid #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f9f9f9;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    
+    .photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .photo-placeholder {
+      font-size: 8px;
+      color: #999;
+      text-align: center;
+    }
+    
+    .form-row {
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      font-size: 9px;
+    }
+    
+    .form-label {
+      font-weight: bold;
+      min-width: 160px;
+    }
+    
+    .form-input {
+      flex: 1;
+      border: none;
+      border-bottom: 1px dotted #000;
+      padding: 2px;
+      font-size: 9px;
+      background: transparent;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-bottom: 1px solid #000;
+    }
+    
+    .address-section {
+      margin-top: 8px;
+    }
+    
+    .address-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 9px;
+    }
+    
+    .address-field {
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+    
+    .nomination-section {
+      margin-top: 10px;
+    }
+    
+    .nomination-title {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 6px;
+      font-size: 10px;
+    }
+    
+    .nomination-text {
+      font-size: 8px;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+      font-size: 8px;
+    }
+    
+    table th, table td {
+      border: 1px solid #000;
+      padding: 3px;
+      text-align: left;
+    }
+    
+    table th {
+      background: #f0f0f0;
+      font-weight: bold;
+    }
+    
+    .signature-section {
+      margin-top: 12px;
+    }
+    
+    .signature-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 9px;
+    }
+    
+    .signature-field {
+      display: flex;
+      align-items: center;
+    }
+    
+    .signature-right {
+      text-align: right;
+    }
+    
+    .office-use {
+      border-top: 1px solid #000;
+      margin-top: 12px;
+      padding-top: 8px;
+    }
+    
+    .office-title {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 10px;
+    }
+    
+    .office-text {
+      font-size: 8px;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+    
+    .office-signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      font-size: 9px;
+    }
+    
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: center;
+    }
+    
+    button {
+      padding: 10px 25px;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      background: #5B4B8A;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #764BA2;
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    
+    /* Loan Bond Specific Styles */
+    .bond-header {
+      text-align: center;
+      border: 2px double #000;
+      padding: 6px;
+      margin-bottom: 8px;
+      background: linear-gradient(to bottom, #f9f9f9, #ffffff);
+    }
+    
+    .bond-title {
+      font-size: 13px;
+      font-weight: bold;
+      margin: 6px 0;
+      text-decoration: underline;
+    }
+    
+    .bond-content {
+      line-height: 1.2;
+      font-size: 8px;
+      text-align: justify;
+      margin: 8px 0;
+    }
+    
+    .bond-field {
+      display: inline-block;
+      border-bottom: 1px solid #000;
+      min-width: 80px;
+      padding: 0 2px;
+      font-weight: bold;
+      font-size: 8px;
+    }
+    
+    .bond-signatures {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    
+    .signature-box {
+      text-align: center;
+    }
+    
+    .signature-line {
+      border-top: 1px solid #000;
+      margin: 12px 8px 3px;
+    }
+    
+    .witness-section {
+      margin-top: 8px;
+      border-top: 1px dashed #000;
+      padding-top: 6px;
+    }
+    
+    .witness-title {
+      font-weight: bold;
+      font-size: 8px;
+      margin-bottom: 4px;
+    }
+    
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+        margin: 0;
+      }
+      
+      .selection-screen {
+        display: none;
+      }
+      
+      .container {
+        box-shadow: none;
+        padding: 8mm;
+        border-radius: 0;
+        max-width: 100%;
+        width: 210mm;
+        min-height: auto;
+        page-break-after: always;
+      }
+      
+      .buttons, .back-button {
+        display: none;
+      }
+      
+      .form-input, .bond-field {
+        border-bottom: 1px dotted #000 !important;
+      }
+      
+      input[type="checkbox"] {
+        -webkit-appearance: checkbox;
+        appearance: checkbox;
+        width: 12px;
+        height: 12px;
+      }
+      
+      @page {
+        size: A4;
+        margin: 8mm;
+      }
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    input[type="file"] {
+      display: none;
+    }
+    
+    .nominee-row td input {
+      width: 100%;
+      border: none;
+      padding: 2px;
+      font-size: 8px;
+    }
+    
+    @media (max-width: 768px) {
+      .card-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Selection Screen -->
+  <div class="selection-screen" id="selectionScreen">
+    <div class="selection-title">📋 FUTURE LIFE - Forms System</div>
+    <div class="card-container">
+      <div class="selection-card" onclick="showForm('account')">
+        <div class="card-icon">👤</div>
+        <div class="card-title">Account Opening Form</div>
+        <div class="card-desc">New member registration form with photo upload</div>
+      </div>
+      
+      <div class="selection-card" onclick="showForm('loan')">
+        <div class="card-icon">📜</div>
+        <div class="card-title">Loan Bond</div>
+        <div class="card-desc">Generate loan agreement bond for members</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Opening Form -->
+  <div class="container" id="accountForm">
+    <button class="back-button" onclick="goBack()">← Back to Menu</button>
+    
+    <div class="form-header">
+      <div class="company-name">FUTURE LIFE PRIVATE LIMITED</div>
+      <div class="logo-circle" onclick="document.getElementById('logoUpload1').click()">
+        <span id="logoText1">FL</span>
+        <img id="logoImg1" class="hidden logo-img" src="">
+      </div>
+      <input type="file" id="logoUpload1" accept="image/*" onchange="uploadLogo('logoUpload1', 'logoImg1', 'logoText1')">
+      <div class="tagline">STAY WITH US AND GROW WITH US</div>
+      <div class="office-address">
+        OFFICE ADDRESS :- ACHYUTAPUR, NEAR FUTURE CLUB, TURIGADIA, SORO, BALASORE, 756050
+      </div>
+    </div>
+
+    <div class="form-title">APPLICATION FORM</div>
+
+    <div class="form-section">
+      <div class="photo-box" onclick="document.getElementById('photoUpload').click()">
+        <div id="photoPlaceholder" class="photo-placeholder">Click to<br>upload<br>photo</div>
+        <img id="photoImg" class="hidden" src="">
+      </div>
+      <input type="file" id="photoUpload" accept="image/*" onchange="uploadPhoto(event)">
+
+      <div class="form-row">
+        <span class="form-label">NAME OF APPLICANT-</span>
+        <input type="text" class="form-input" id="applicantName">
+      </div>
+
+      <div class="form-row">
+        <span class="form-label">NAME OF HUSBAND/FATHER/MOTHER-</span>
+        <input type="text" class="form-input" id="guardianName">
+      </div>
+
+      <div class="form-row">
+        <span class="form-label">GENDER (M/F/O) -</span>
+        <input type="text" class="form-input" id="gender" style="max-width: 80px;">
+        <span class="form-label" style="margin-left: 15px; min-width: 150px;">DATE OF BIRTH- (DD/MM/YYYY) -</span>
+        <input type="text" class="form-input" id="dob">
+      </div>
+
+      <div class="form-row">
+        <span class="form-label">AADHAAR NO-</span>
+        <input type="text" class="form-input" id="aadhaar">
+      </div>
+
+      <div class="form-row">
+        <span class="form-label">PAN Number*</span>
+        <input type="text" class="form-input" id="pan">
+      </div>
+
+      <div class="address-section">
+        <div class="form-row">
+          <span class="form-label">ADDRESS:-</span>
+        </div>
+
+        <div class="address-row">
+          <div class="address-field">
+            <span style="font-weight: bold;">AT-</span>
+            <input type="text" class="form-input" id="at">
+          </div>
+          <div class="address-field">
+            <span style="font-weight: bold;">PO-</span>
+            <input type="text" class="form-input" id="po">
+          </div>
+          <div class="address-field">
+            <span style="font-weight: bold;">VIA-</span>
+            <input type="text" class="form-input" id="via">
+          </div>
+        </div>
+
+        <div class="address-row">
+          <div class="address-field">
+            <span style="font-weight: bold;">BLOCK-</span>
+            <input type="text" class="form-input" id="block">
+          </div>
+          <div class="address-field">
+            <span style="font-weight: bold;">DISTRICT-</span>
+            <input type="text" class="form-input" id="district">
+          </div>
+        </div>
+
+        <div class="address-row">
+          <div class="address-field">
+            <span style="font-weight: bold;">STATE-</span>
+            <input type="text" class="form-input" id="state">
+          </div>
+          <div class="address-field">
+            <span style="font-weight: bold;">PIN-</span>
+            <input type="text" class="form-input" id="pin">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <span class="form-label">Telephone No./Mobile No.*</span>
+          <input type="text" class="form-input" id="mobile">
+          <span class="form-label" style="margin-left: 15px;">E-mail ID-</span>
+          <input type="text" class="form-input" id="email">
+        </div>
+      </div>
+    </div>
+
+    <div class="nomination-section">
+      <div class="nomination-title">NOMINATION*</div>
+      <div class="nomination-text">
+        I................................................hereby nominate the person mentioned below to whom to the exclusion of all other persons in the event of
+        my death the amount standing to my credit in ................................................ at the time of my death would be payable.
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 30px;">Sl</th>
+            <th>Name of the nominee</th>
+            <th>Relationship</th>
+            <th>Full address</th>
+            <th>Aadhaar number of nominee</th>
+            <th>Date of birth of nominee</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="nominee-row">
+            <td>1</td>
+            <td><input type="text" id="nomName"></td>
+            <td><input type="text" id="nomRelation"></td>
+            <td><input type="text" id="nomAddress"></td>
+            <td><input type="text" id="nomAadhaar"></td>
+            <td><input type="text" id="nomDOB"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: 10px; padding: 8px; background: #f9f9f9; border: 1px solid #ccc;">
+        <div style="font-weight: bold; margin-bottom: 6px; font-size: 9px;">
+          GUARDIAN DETAILS (If nominee is minor - below 18 years)
+        </div>
+        <div class="form-row">
+          <span class="form-label" style="min-width: 140px;">Guardian Name:</span>
+          <input type="text" class="form-input" id="guardianName2" placeholder="Leave blank if nominee is adult">
+        </div>
+        <div class="form-row">
+          <span class="form-label" style="min-width: 140px;">Guardian Relationship:</span>
+          <input type="text" class="form-input" id="guardianRelation" placeholder="e.g., Father, Mother">
+        </div>
+        <div class="form-row">
+          <span class="form-label" style="min-width: 140px;">Guardian Address:</span>
+          <input type="text" class="form-input" id="guardianAddress" placeholder="Complete address">
+        </div>
+      </div>
+    </div>
+
+    <div class="signature-section">
+      <div class="signature-row">
+        <div class="signature-field">
+          <span style="font-weight: bold;">Date:-</span>
+          <input type="text" class="form-input" id="date1" style="max-width: 120px;">
+        </div>
+      </div>
+
+      <div class="signature-row">
+        <div class="signature-field">
+          <span style="font-weight: bold;">Place:-</span>
+          <input type="text" class="form-input" id="place1" style="max-width: 150px;">
+        </div>
+        <div class="signature-right">
+          <strong>Signature or thumb impression of Applicant</strong>
+        </div>
+      </div>
+      <div style="border-bottom: 1px dotted #000; margin-top: 40px;"></div>
+    </div>
+
+    <div class="office-use">
+      <div class="office-title">FOR OFFICE USE ONLY</div>
+      <div class="office-text">
+        I have carefully examined this application and identification as well as address proof documents submitted. Opening of account is approved.
+        Account has been opened in the name of.........................................................................with Rs.......................on............................ (Date)
+      </div>
+
+      <div class="office-signatures">
+        <div>
+          <strong>Signature of Treasurer Designation stamp</strong>
+        </div>
+        <div style="text-align: right;">
+          <strong>Signature of President Designation stamp</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn-secondary" onclick="clearAccountForm()">Clear Form</button>
+      <button class="btn-primary" onclick="printForm()">Print / Save as PDF</button>
+    </div>
+  </div>
+<!-- Loan Bond Form -->
+  <div class="container" id="loanForm">
+    <button class="back-button" onclick="goBack()">← Back to Menu</button>
+    
+    <div class="bond-header">
+      <div class="company-name">FUTURE LIFE PRIVATE LIMITED</div>
+      <div class="logo-circle" onclick="document.getElementById('logoUpload2').click()">
+        <span id="logoText2">FL</span>
+        <img id="logoImg2" class="hidden logo-img" src="">
+      </div>
+      <input type="file" id="logoUpload2" accept="image/*" onchange="uploadLogo('logoUpload2', 'logoImg2', 'logoText2')">
+      <div class="tagline">STAY WITH US AND GROW WITH US</div>
+      <div class="office-address" style="border-top: 1px solid #000; margin-top: 8px;">
+        OFFICE ADDRESS :- ACHYUTAPUR, NEAR FUTURE CLUB, TURIGADIA, SORO, BALASORE, 756050
+      </div>
+    </div>
+
+    <div class="bond-title">LOAN BOND AGREEMENT</div>
+
+    <div class="form-row">
+      <span class="form-label" style="min-width: 120px;">Loan A/C No:</span>
+      <input type="text" class="form-input" id="bondNo" placeholder="Auto-generated or manual">
+    </div>
+
+    <div class="bond-content">
+      <p style="text-indent: 30px; margin-bottom: 10px;">
+        This Loan Bond Agreement is made on <input type="text" class="bond-field" id="agreementDate" placeholder="DD/MM/YYYY" style="width: 100px;"> 
+        between <strong>FUTURE LIFE PRIVATE LIMITED</strong> (hereinafter referred to as "Lender") having its office at Achyutapur, 
+        Near Future Club, Turigadia, Soro, Balasore - 756050, and
+      </p>
+      <div style="margin: 12px 0; padding: 10px; border: 1px solid #000; background: #f9f9f9;">
+        <div class="form-row">
+          <span class="form-label" style="min-width: 140px;">Borrower Name:</span>
+          <input type="text" class="form-input" id="borrowerName" placeholder="Full Name">
+        </div>
+        <div class="form-row">
+          <span class="form-label" style="min-width: 140px;">Father's/Husband's Name:</span>
+          <input type="text" class="form-input" id="borrowerFather" placeholder="Name">
+        </div>
+        <div class="form-row">
+          <span class="form-label" style="min-width: 140px;">Address:</span>
+          <input type="text" class="form-input" id="borrowerAddress" placeholder="Complete Address">
+        </div>
+        <div class="form-row">
+          <span class="form-label" style="min-width: 140px;">Member ID:</span>
+          <input type="text" class="form-input" id="memberId" placeholder="Member ID" style="max-width: 150px;">
+        </div>
+      </div>
+  
+      <p style="margin: 10px 0;">
+        (hereinafter referred to as "Borrower")
+      </p>
+      <p style="margin: 12px 0; font-weight: bold; text-align: center; font-size: 11px;">
+        TERMS AND CONDITIONS OF LOAN
+      </p>
+      <div style="margin: 10px 0; padding: 10px; border: 1px solid #000;">
+        <div class="form-row" style="margin-bottom: 8px;">
+          <span class="form-label" style="min-width: 140px;">Loan Amount:</span>
+          <span style="font-size: 12px; font-weight: bold;">₹</span>
+          <input type="text" class="form-input" id="loanAmount" placeholder="0" style="max-width: 150px; font-weight: bold; font-size: 10px;">
+          <span style="margin-left: 8px; font-size: 8px;">(Rupees: <input type="text" class="form-input" id="loanAmountWords" placeholder="In words" style="font-size: 8px;">)</span>
+        </div>
+
+        <div class="form-row" style="margin-bottom: 8px;">
+          <span class="form-label" style="min-width: 140px;">Interest Rate:</span>
+          <input type="text" class="form-input" id="interestRate" placeholder="0" style="max-width: 80px; font-weight: bold;">
+          <span style="font-weight: bold; margin-left: 4px;">% per month</span>
+        </div>
+
+        <div class="form-row" style="margin-bottom: 8px;">
+          <span class="form-label" style="min-width: 140px;">Loan Tenure:</span>
+          <input type="text" class="form-input" id="loanTenure" placeholder="0" style="max-width: 80px; font-weight: bold;">
+          <span style="font-weight: bold; margin-left: 4px;">months</span>
+        </div>
+
+        <div class="form-row" style="margin-bottom: 8px;">
+          <span class="form-label" style="min-width: 140px;">Repayment Scheme:</span>
+          <select class="form-input" id="repaymentScheme" style="max-width: 150px; border: 1px solid #000; padding: 4px; font-size: 8px;">
+            <option value="EMI">EMI (Equated Monthly Installment)</option>
+            <option value="FLEXIBLE">FLEXIBLE (Flexible Payment)</option>
+          </select>
+        </div>
+
+        <div class="form-row" id="emiRow" style="margin-bottom: 8px;">
+          <span class="form-label" style="min-width: 140px;">Monthly EMI (if applicable):</span>
+          <span style="font-size: 12px; font-weight: bold;">₹</span>
+          <input type="text" class="form-input" id="emiAmount" placeholder="Enter amount manually" style="max-width: 150px; font-weight: bold; font-size: 10px;">
+          <span style="margin-left: 8px; font-size: 7px; color: #666;">(Optional - for EMI scheme only)</span>
+        </div>
+      </div>
+
+      <div style="margin: 10px 0; padding: 8px; background: #fff8dc; border-left: 3px solid #FFD700;">
+        <div style="font-weight: bold; margin-bottom: 5px; color: #5B4B8A; font-size: 9px;">📌 Interest Calculation Method:</div>
+        <div style="font-size: 8px; line-height: 1.3;">
+          <strong>EMI Scheme:</strong> 1% interest per month on remaining principal amount<br>
+          <strong>Flexible Scheme:</strong> 1.25% interest per month on remaining principal amount<br>
+          <em style="color: #666;">Note: Interest is calculated on outstanding balance only</em>
+        </div>
+      </div>
+
+      <p style="margin: 10px 0; line-height: 1.3; text-align: justify;">
+        In case of default in repayment, the Lender reserves the right to take appropriate legal action and recover 
+        the outstanding amount along with interest and penalties as per the organization's rules and regulations.
+      </p>
+
+      <p style="margin: 10px 0; line-height: 1.3; text-align: justify; font-weight: bold;">
+        The Borrower confirms that all information provided is true and accurate. This agreement is binding upon 
+        the Borrower and their legal heirs.
+      </p>
+    </div>
+
+    <!-- Declaration Section -->
+    <div style="margin: 10px 0; padding: 8px; border: 2px solid #000; background: #f9f9f9;">
+      <div style="text-align: center; font-size: 10px; font-weight: bold; margin-bottom: 6px; text-decoration: underline;">
+        DECLARATION BY BORROWER
+      </div>
+      
+      <div style="margin: 6px 0;">
+        <label style="display: flex; align-items: flex-start; margin-bottom: 3px; cursor: pointer;">
+          <input type="checkbox" id="declaration1" style="margin-right: 4px; margin-top: 1px; width: 10px; height: 10px; cursor: pointer;">
+          <span style="line-height: 1.2; font-size: 7px;">
+            <strong>I hereby declare that</strong> I have read and understood all the terms and conditions of this loan agreement. 
+            I agree to abide by all the rules and regulations set forth by FUTURE LIFE PRIVATE LIMITED.
+          </span>
+        </label>
+
+        <label style="display: flex; align-items: flex-start; margin-bottom: 3px; cursor: pointer;">
+          <input type="checkbox" id="declaration2" style="margin-right: 4px; margin-top: 1px; width: 10px; height: 10px; cursor: pointer;">
+          <span style="line-height: 1.2; font-size: 7px;">
+            <strong>I confirm that</strong> all information provided by me in this application is true, complete, and accurate 
+            to the best of my knowledge. I understand that any false information may lead to cancellation of the loan.
+          </span>
+        </label>
+
+        <label style="display: flex; align-items: flex-start; margin-bottom: 3px; cursor: pointer;">
+          <input type="checkbox" id="declaration3" style="margin-right: 4px; margin-top: 1px; width: 10px; height: 10px; cursor: pointer;">
+          <span style="line-height: 1.2; font-size: 7px;">
+            <strong>I agree to repay</strong> the loan amount along with applicable interest as per the agreed schedule. 
+            I understand that failure to repay on time will result in penalties and additional charges as per organization policy.
+          </span>
+        </label>
+
+        <label style="display: flex; align-items: flex-start; margin-bottom: 3px; cursor: pointer;">
+          <input type="checkbox" id="declaration4" style="margin-right: 4px; margin-top: 1px; width: 10px; height: 10px; cursor: pointer;">
+          <span style="line-height: 1.2; font-size: 7px;">
+            <strong>I consent to legal recovery:</strong> In case of default in repayment, I hereby authorize FUTURE LIFE PRIVATE LIMITED 
+            to take appropriate legal action for recovery of the outstanding loan amount, including but not limited to filing civil suits, 
+            attachment of assets, and any other legal remedies available under law.
+          </span>
+        </label>
+
+        <label style="display: flex; align-items: flex-start; margin-bottom: 3px; cursor: pointer;">
+          <input type="checkbox" id="declaration5" style="margin-right: 4px; margin-top: 1px; width: 10px; height: 10px; cursor: pointer;">
+          <span style="line-height: 1.2; font-size: 7px;">
+            <strong>I understand that</strong> in the event of my death, the outstanding loan amount shall be recovered from 
+            my legal heirs or from my deposits/savings with FUTURE LIFE PRIVATE LIMITED.
+          </span>
+        </label>
+
+        <label style="display: flex; align-items: flex-start; margin-bottom: 3px; cursor: pointer;">
+          <input type="checkbox" id="declaration6" style="margin-right: 4px; margin-top: 1px; width: 10px; height: 10px; cursor: pointer;">
+          <span style="line-height: 1.2; font-size: 7px;">
+            <strong>I authorize</strong> FUTURE LIFE PRIVATE LIMITED to deduct loan installments from my salary, deposits, 
+            or any other payments due to me from the organization without any further consent.
+          </span>
+        </label>
+
+        <label style="display: flex; align-items: flex-start; cursor: pointer;">
+          <input type="checkbox" id="declaration7" style="margin-right: 4px; margin-top: 1px; width: 10px; height: 10px; cursor: pointer;">
+          <span style="line-height: 1.2; font-size: 7px;">
+            <strong>I acknowledge that</strong> this loan bond is a legally binding document and can be produced as evidence 
+            in a court of law. I voluntarily sign this agreement with full understanding of its legal implications.
+          </span>
+        </label>
+      </div>
+
+      <div style="margin-top: 6px; padding: 5px; background: #fff3cd; border-left: 2px solid #ff0000;">
+        <strong style="color: #721c24; font-size: 7px;">⚠️ IMPORTANT:</strong> 
+        <span style="font-size: 7px;">
+          By signing this document, the borrower accepts all terms and conditions mentioned above and agrees to legal recovery 
+          proceedings in case of default. This is a legally enforceable contract.
+        </span>
+      </div>
+    </div>
+
+    <div class="bond-signatures">
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <div style="font-weight: bold; margin-top: 4px; font-size: 8px;">Signature of Borrower</div>
+      </div>
+
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <div style="font-weight: bold; margin-top: 4px; font-size: 8px;">For FUTURE LIFE PVT LTD</div>
+        <div style="margin-top: 2px; font-size: 7px;">Authorized Signatory</div>
+      </div>
+    </div>
+
+    <div class="witness-section">
+      <div class="witness-title">WITNESSES:</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px;">
+        <div>
+          <div style="margin-bottom: 5px;">
+            <div style="font-weight: bold; font-size: 7px;">Witness 1:</div>
+            <div style="margin-top: 3px; font-size: 7px;">Name: _________________________________</div>
+            <div style="margin-top: 3px; font-size: 7px;">Address: _________________________________</div>
+            <div style="margin-top: 10px; border-top: 1px solid #000; padding-top: 2px; width: 130px; font-size: 7px;">Signature</div>
+          </div>
+        </div>
+        <div>
+          <div style="margin-bottom: 5px;">
+            <div style="font-weight: bold; font-size: 7px;">Witness 2:</div>
+            <div style="margin-top: 3px; font-size: 7px;">Name: _________________________________</div>
+            <div style="margin-top: 3px; font-size: 7px;">Address: _________________________________</div>
+            <div style="margin-top: 10px; border-top: 1px solid #000; padding-top: 2px; width: 130px; font-size: 7px;">Signature</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn-secondary" onclick="clearLoanForm()">Clear Form</button>
+      <button class="btn-primary" onclick="printForm()">Print / Save as PDF</button>
+    </div>
+  </div>
+
+  <script>
+    // Navigation Functions
+    function showForm(formType) {
+      document.getElementById('selectionScreen').style.display = 'none';
+      
+      if (formType === 'account') {
+        document.getElementById('accountForm').classList.add('active');
+        setCurrentDate('date1');
+      } else if (formType === 'loan') {
+        document.getElementById('loanForm').classList.add('active');
+        setCurrentDate('bondDate');
+        setCurrentDate('agreementDate');
+      }
+    }
+
+    function goBack() {
+      document.getElementById('accountForm').classList.remove('active');
+      document.getElementById('loanForm').classList.remove('active');
+      document.getElementById('selectionScreen').style.display = 'block';
+    }
+
+    // Logo Upload
+    function uploadLogo(uploadId, imgId, textId) {
+      const file = document.getElementById(uploadId).files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById(imgId).src = e.target.result;
+          document.getElementById(imgId).classList.remove('hidden');
+          document.getElementById(textId).style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Photo Upload (Account Form)
+    function uploadPhoto(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('photoImg').src = e.target.result;
+          document.getElementById('photoImg').classList.remove('hidden');
+          document.getElementById('photoPlaceholder').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Print Function
+    function printForm() {
+      window.print();
+    }
+
+    // Clear Account Form
+    function clearAccountForm() {
+      if (confirm('Are you sure you want to clear all fields?')) {
+        document.querySelectorAll('#accountForm input[type="text"]').forEach(input => input.value = '');
+        
+        document.getElementById('logoImg1').classList.add('hidden');
+        document.getElementById('logoText1').style.display = 'block';
+        document.getElementById('photoImg').classList.add('hidden');
+        document.getElementById('photoPlaceholder').style.display = 'block';
+        
+        document.getElementById('logoUpload1').value = '';
+        document.getElementById('photoUpload').value = '';
+        
+        setCurrentDate('date1');
+      }
+    }
+
+    // Clear Loan Form
+    function clearLoanForm() {
+      if (confirm('Are you sure you want to clear all fields?')) {
+        document.querySelectorAll('#loanForm input[type="text"]').forEach(input => input.value = '');
+        document.querySelectorAll('#loanForm input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.getElementById('repaymentScheme').value = 'EMI';
+        
+        document.getElementById('logoImg2').classList.add('hidden');
+        document.getElementById('logoText2').style.display = 'block';
+        document.getElementById('logoUpload2').value = '';
+        
+        setCurrentDate('bondDate');
+        setCurrentDate('agreementDate');
+        
+        const bondNo = 'FLLB' + Date.now().toString().slice(-8);
+        document.getElementById('bondNo').value = bondNo;
+      }
+    }
+
+    // Set Current Date
+    function setCurrentDate(fieldId) {
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const yyyy = today.getFullYear();
+      document.getElementById(fieldId).value = dd + '/' + mm + '/' + yyyy;
+    }
+
+    // Number to Words Converter
+    function numberToWords(num) {
+      const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+      const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+      const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+      
+      if (num === 0) return 'Zero';
+      
+      function convertLessThanThousand(n) {
+        if (n === 0) return '';
+        if (n < 10) return ones[n];
+        if (n < 20) return teens[n - 10];
+        if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
+        return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' ' + convertLessThanThousand(n % 100) : '');
+      }
+      
+      if (num < 1000) return convertLessThanThousand(num);
+      if (num < 100000) return convertLessThanThousand(Math.floor(num / 1000)) + ' Thousand ' + convertLessThanThousand(num % 1000);
+      if (num < 10000000) return convertLessThanThousand(Math.floor(num / 100000)) + ' Lakh ' + convertLessThanThousand(num % 100000);
+      return convertLessThanThousand(Math.floor(num / 10000000)) + ' Crore ' + convertLessThanThousand(num % 10000000);
+    }
+
+    // Auto-convert loan amount to words
+    document.addEventListener('DOMContentLoaded', function() {
+      const loanAmountField = document.getElementById('loanAmount');
+      const loanAmountWordsField = document.getElementById('loanAmountWords');
+      
+      if (loanAmountField && loanAmountWordsField) {
+        loanAmountField.addEventListener('blur', function() {
+          const amount = parseFloat(this.value.replace(/,/g, ''));
+          if (amount && !isNaN(amount)) {
+            loanAmountWordsField.value = numberToWords(Math.floor(amount)) + ' Rupees Only';
+          }
+        });
+      }
+      
+      const schemeField = document.getElementById('repaymentScheme');
+      
+      if (schemeField) {
+        schemeField.addEventListener('change', function() {
+          const emiInput = document.getElementById('emiAmount');
+          if (this.value === 'FLEXIBLE') {
+            emiInput.placeholder = 'Not required for Flexible';
+            emiInput.value = '';
+          } else {
+            emiInput.placeholder = 'Enter amount manually';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

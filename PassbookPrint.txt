@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passbook Print System</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh; padding: 20px;
+    }
+    .container {
+      max-width: 900px; margin: 0 auto; background: white;
+      border-radius: 20px; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .header {
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      color: white; padding: 30px; text-align: center;
+    }
+    .header h1 { font-size: 28px; margin-bottom: 8px; }
+    .header p { font-size: 13px; opacity: 0.9; }
+
+    /* ✅ Operator badge in header */
+    .operator-badge {
+      display: inline-block;
+      background: #f39c12;
+      color: white;
+      padding: 5px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .content { padding: 30px; }
+
+    /* Search */
+    .search-box { display: flex; gap: 10px; margin-bottom: 15px; }
+    .search-box input {
+      flex: 1; padding: 12px; border: 2px solid #e0e0e0;
+      border-radius: 8px; font-size: 14px;
+    }
+    .search-box input:focus { border-color: #667eea; outline: none; }
+    .btn {
+      padding: 12px 25px; border: none; border-radius: 8px;
+      font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.3s;
+    }
+    .btn-primary { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+    .btn-success { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
+    .btn-secondary { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; }
+
+    /* Account cards */
+    .account-card {
+      background: #f8f9fa; padding: 15px; border-radius: 8px;
+      margin-bottom: 10px; cursor: pointer; transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    .account-card:hover { background: #e3f2fd; border-color: #2196F3; transform: translateX(5px); }
+    .account-card h4 { color: #2c3e50; margin-bottom: 5px; }
+    .account-card p { color: #7f8c8d; font-size: 13px; }
+
+    /* Print type */
+    .print-type-section {
+      display: none; margin: 20px 0; background: #f0f8ff;
+      padding: 20px; border-radius: 10px;
+    }
+    .print-type-buttons { display: flex; gap: 15px; margin-top: 15px; }
+    .print-type-buttons button { flex: 1; }
+
+    /* Messages */
+    .message {
+      padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;
+    }
+    .message-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .message-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .message-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 20px; color: #7f8c8d; }
+    .spinner {
+      border: 3px solid #f3f3f3; border-top: 3px solid #3498db;
+      border-radius: 50%; width: 40px; height: 40px;
+      animation: spin 1s linear infinite; margin: 0 auto 10px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Transactions table */
+    .transactions-preview { display: none; margin-top: 20px; }
+    .transactions-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .transactions-table th {
+      background: #34495e; color: white; padding: 12px;
+      text-align: left; font-size: 13px;
+    }
+    .transactions-table td { padding: 10px; border-bottom: 1px solid #e0e0e0; font-size: 13px; }
+    .transactions-table tr:hover { background: #f8f9fa; }
+    .credit { color: #27ae60; font-weight: bold; }
+
+    /* Print Actions */
+    .print-actions {
+      display: none; margin-top: 25px; padding-top: 25px;
+      border-top: 2px solid #e0e0e0; text-align: center; gap: 15px;
+      flex-wrap: wrap; justify-content: center;
+    }
+
+    /* ============================================================
+       PASSBOOK PRINT VIEW — only visible on print
+    ============================================================ */
+    .passbook-print-view { display: none; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .container { box-shadow: none; border-radius: 0; }
+      .header, .content > *:not(.passbook-print-view) { display: none !important; }
+      .passbook-print-view { display: block !important; }
+      @page { size: A5 landscape; margin: 5mm; }
+    }
+
+    /* ─── Passbook Page wrapper ─── */
+    .pb-page {
+      width: 100%;
+      font-family: 'Courier New', Courier, monospace;
+      page-break-after: always;
+    }
+    .pb-page:last-child { page-break-after: auto; }
+
+    /* Cover page */
+    .pb-cover {
+      border: 3px double #1a237e;
+      padding: 0; min-height: 180mm;
+      display: flex; flex-direction: column;
+    }
+    .pb-cover-header {
+      background: linear-gradient(135deg, #1a237e, #283593);
+      color: white; text-align: center; padding: 14px 10px;
+    }
+    .pb-cover-header h2 { font-size: 18px; letter-spacing: 2px; margin-bottom: 4px; }
+    .pb-cover-header .branch-info { font-size: 11px; opacity: 0.85; }
+    .pb-logo { font-size: 36px; margin-bottom: 4px; }
+
+    .pb-cover-body { padding: 12px 16px; flex: 1; }
+
+    .pb-cover-photo-row {
+      display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start;
+    }
+    .pb-photo-box {
+      width: 70px; height: 80px; border: 2px solid #1a237e;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: #666; text-align: center; flex-shrink: 0;
+      background: #f5f5f5; border-radius: 4px;
+    }
+    .pb-info-grid { flex: 1; }
+
+    .pb-row {
+      display: flex; border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 6px; padding-bottom: 5px; align-items: baseline;
+    }
+    .pb-label {
+      font-size: 10px; color: #555; font-weight: 600;
+      width: 90px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .pb-value {
+      font-size: 11px; color: #1a1a1a; font-weight: 700; flex: 1;
+    }
+    .pb-value.large { font-size: 13px; color: #1a237e; }
+
+    .pb-badge {
+      display: inline-block; background: #1a237e; color: white;
+      padding: 2px 8px; border-radius: 10px; font-size: 9px;
+      font-weight: bold; letter-spacing: 0.5px; margin-left: 6px;
+    }
+
+    .pb-divider { border: none; border-top: 2px solid #1a237e; margin: 10px 0; }
+
+    .pb-nominee-box {
+      background: #e8eaf6; border-radius: 6px; padding: 8px 12px;
+      margin-bottom: 10px; border-left: 4px solid #1a237e;
+    }
+    .pb-nominee-box .pb-label { color: #1a237e; }
+
+    .pb-instructions {
+      background: #fff8e1; border: 1px solid #ffe082;
+      border-radius: 6px; padding: 8px 12px;
+    }
+    .pb-instructions h4 {
+      font-size: 10px; color: #e65100; margin-bottom: 5px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .pb-instructions ol { padding-left: 14px; }
+    .pb-instructions li { font-size: 9px; color: #444; margin-bottom: 3px; line-height: 1.4; }
+
+    .pb-cover-footer {
+      background: #f5f5f5; border-top: 2px solid #1a237e;
+      padding: 6px 12px; text-align: center;
+      font-size: 9px; color: #555;
+    }
+
+    /* ─── Transaction Page — only the table, nothing else ─── */
+
+    .pb-txn-page {
+      width: 100%;
+      background: #fff;
+    }
+
+    .pb-txn-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* Column header — only on first page (page-index 0) */
+    .pb-txn-table thead tr th {
+      background: #1a237e;
+      color: #fff;
+      font-size: 9px;
+      font-weight: bold;
+      padding: 4px 5px;
+      border-right: 1px solid rgba(255,255,255,0.2);
+      white-space: nowrap;
+    }
+    .pb-txn-table thead tr th:last-child { border-right: none; }
+
+    /* Hide header on continuation pages — not used, header only on page 0 */
+
+    /* Fixed-height ruled rows */
+    .pb-txn-table tbody tr td {
+      font-size: 9px;
+      padding: 0 4px;
+      height: 16px;
+      line-height: 16px;
+      border-bottom: 1px solid #bbb;
+      border-right: 1px solid #ddd;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+    }
+    .pb-txn-table tbody tr td:last-child { border-right: none; }
+
+    /* Alternating rows */
+    .pb-txn-table tbody tr:nth-child(odd)  { background: #fff; }
+    .pb-txn-table tbody tr:nth-child(even) { background: #f5f5f5; }
+
+    @media print {
+      .pb-txn-table tbody tr:nth-child(odd)  { background: #fff     !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .pb-txn-table tbody tr:nth-child(even) { background: #f5f5f5  !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .pb-txn-table thead tr th              { background: #1a237e  !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    /* Column widths */
+    .pb-col-sr    { width: 22px;  text-align: center; color: #888; }
+    .pb-col-date  { width: 58px;  white-space: nowrap; }
+    .pb-col-desc  { width: auto; }
+    .pb-col-dep   { width: 68px;  text-align: right; color: #1b5e20; font-weight: bold; }
+    .pb-col-with  { width: 68px;  text-align: right; color: #b71c1c; font-weight: bold; }
+    .pb-col-bal   { width: 72px;  text-align: right; color: #0d47a1; font-weight: bold; }
+    .pb-col-init  { width: 38px;  text-align: center; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📖 Passbook Print System</h1>
+    <p id="headerSubtitle">Print new passbook or update existing passbook</p>
+    <!-- ✅ Operator ID badge -->
+    <div class="operator-badge" id="operatorBadge">🔒 Loading...</div>
+  </div>
+
+  <div class="content">
+    <div id="messageBox" class="message"></div>
+
+    <!-- Search -->
+    <div id="searchSection">
+      <h3 style="margin-bottom:15px;color:#2c3e50;">🔍 Search Account</h3>
+      <div class="search-box">
+        <input type="text" id="searchInput"
+          placeholder="Enter Account Number, Member ID, or Name"
+          onkeypress="if(event.key==='Enter') searchAccount()">
+        <button class="btn btn-primary" onclick="searchAccount()">Search</button>
+      </div>
+      <div id="searchResults"></div>
+    </div>
+
+    <!-- Print Type -->
+    <div id="printTypeSection" class="print-type-section">
+      <h3 style="color:#2c3e50;margin-bottom:8px;">Select Print Type</h3>
+      <p style="color:#7f8c8d;font-size:13px;">Choose passbook type to print</p>
+      <div class="print-type-buttons">
+        <button class="btn btn-success" onclick="loadTransactions('NEW')">
+          📋 Cover Page<br>
+          <small style="font-weight:normal;opacity:0.8;">(Front page — member details)</small>
+        </button>
+        <button class="btn btn-primary" onclick="showSrNoInput()">
+          📝 Transactions<br>
+          <small style="font-weight:normal;opacity:0.8;">(New entries only)</small>
+        </button>
+      </div>
+
+      <!-- Sr. No. input box — shows after clicking Transactions -->
+      <div id="srNoBox" style="display:none;margin-top:20px;background:#fff8e1;
+        border:2px solid #f39c12;border-radius:10px;padding:18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:24px;">📖</span>
+          <div>
+            <div style="font-weight:bold;color:#2c3e50;font-size:15px;">
+              Physical Passbook Check
+            </div>
+            <div style="color:#7f8c8d;font-size:12px;margin-top:2px;">
+              Passbook mein last printed entry dekho — woh Sr. No. kya tha?
+            </div>
+          </div>
+        </div>
+
+        <!-- Info bar — system se auto printedCount -->
+        <div id="srNoAutoInfo" style="background:#e8f5e9;border-radius:6px;
+          padding:10px 14px;margin-bottom:14px;font-size:13px;color:#2e7d32;display:none;">
+        </div>
+
+        <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:180px;">
+            <label style="display:block;font-size:12px;font-weight:bold;
+              color:#555;margin-bottom:6px;">
+              Passbook mein LAST printed Sr. No.
+            </label>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <input type="number" id="lastSrNoInput" min="0" value="0"
+                style="width:90px;padding:10px;border:2px solid #e0e0e0;
+                border-radius:6px;font-size:18px;font-weight:bold;text-align:center;"
+                oninput="onSrNoChange()"
+                placeholder="0">
+              <div style="font-size:13px;color:#7f8c8d;line-height:1.4;">
+                ← Agar koi print nahi hua<br>to 0 rakho
+              </div>
+            </div>
+          </div>
+          <div style="background:#f8f9fa;border-radius:8px;padding:10px 16px;
+            font-size:13px;color:#2c3e50;line-height:1.6;">
+            Next print shuru hoga:<br>
+            <strong style="font-size:20px;color:#e74c3c;" id="nextSrNoDisplay">
+              Sr. No. 1
+            </strong>
+            <span style="font-size:12px;color:#7f8c8d;" id="nextSrNoNote"> se</span>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="loadTransactionsWithSrNo()"
+            style="flex:1;padding:12px;">
+            ✅ Confirm &amp; Load Transactions
+          </button>
+          <button class="btn btn-secondary" onclick="hideSrNoInput()"
+            style="padding:12px 16px;">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions Preview -->
+    <div id="transactionsPreview" class="transactions-preview">
+      <h3 style="color:#2c3e50;margin-bottom:15px;">📋 Preview</h3>
+      <div id="previewContent"></div>
+    </div>
+
+    <!-- Print Actions -->
+    <div id="printActions" style="display:none;margin-top:20px;text-align:center;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <button class="btn btn-success" onclick="confirmAndPrint()" style="margin:5px;">
+        🖨️ Print Passbook
+      </button>
+      <button class="btn btn-secondary" onclick="resetForm()" style="margin:5px;">
+        ↺ Start Over
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PASSBOOK PRINT VIEW (screen pe hidden, print pe visible) -->
+<div class="passbook-print-view" id="passbookPrintView">
+  <div class="pb-page" id="pbCoverPage"></div>
+  <div class="pb-page" id="pbTxnPage"></div>
+</div>
+
+<script>
+    // ✅ XSS Protection
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+        .replace(/'/g,'&#x27;');
+    }
+
+  // ── State ──
+  let selectedAccount   = null;
+  let selectedPrintType = null;
+  let transactionsData  = null;
+  let manualStartSrNo   = 0;   // operator-set Sr. No. — global so async callback can read it
+
+  // ════════════════════════════════════════════════
+  // ✅ FIX: currentUser — window.onload ke andar set
+  //    karo taaki window.OPERATOR_ID inject ho sake
+  //    GAS se pehle
+  // ════════════════════════════════════════════════
+  let currentUser = 'OPERATOR'; // default
+
+  window.onload = function() {
+    // ✅ window.onload ke baad read karo — GAS injection complete hoti hai
+    currentUser =
+      window.OPERATOR_ID ||
+      new URLSearchParams(window.location.search).get('operator') ||
+      new URLSearchParams(window.location.search).get('operatorId') ||
+      'OPERATOR';
+
+    // ✅ Header badge update karo
+    const badge = document.getElementById('operatorBadge');
+    if (badge) {
+      badge.textContent = currentUser !== 'OPERATOR'
+        ? '🔒 Operator: ' + currentUser
+        : '🔒 OPERATOR';
+    }
+
+    document.getElementById('headerSubtitle').textContent =
+      'Print new passbook or update existing passbook | By: ' + currentUser;
+
+    document.getElementById('searchInput').focus();
+
+    console.log('✅ PassbookPrint loaded | Operator:', currentUser);
+  };
+
+  // ── Helpers ──
+  function showMessage(msg, type) {
+    const b = document.getElementById('messageBox');
+    b.className = 'message message-' + type;
+    b.innerHTML = msg;
+    b.style.display = 'block';
+    if (type !== 'error') setTimeout(() => b.style.display = 'none', 5000);
+  }
+
+  function showLoading(id) {
+    const el = document.getElementById(id);
+    el.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';
+    el.style.display = 'block';
+  }
+
+  // ── Sr. No. Input functions ───────────────────────────────────
+  function showSrNoInput() {
+    document.getElementById('srNoBox').style.display = 'block';
+
+    // System se auto printedCount fetch karo — ek hint ke roop mein
+    if (selectedAccount) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          const infoEl = document.getElementById('srNoAutoInfo');
+          if (res && res.success) {
+            const pc = res.printedCount || 0;
+            infoEl.style.display = 'block';
+            if (pc === 0) {
+              infoEl.innerHTML = '💡 System record: Is account ka <strong>koi transaction abhi tak print nahi hua</strong>. Agar yeh sahi hai to 0 rakho.';
+            } else {
+              infoEl.innerHTML = '💡 System record ke mutabik <strong>' + pc + ' transactions</strong> pehle print ho chuke hain. Physical passbook dekh ke confirm karo.';
+              // Auto-fill with system value as suggestion
+              const inp = document.getElementById('lastSrNoInput');
+              if (!inp.dataset.userEdited) {
+                inp.value = pc;
+                onSrNoChange();
+              }
+            }
+          }
+        })
+        .withFailureHandler(function() {})
+        .getPassbookTransactions(selectedAccount.accountNumber, 'SUBSEQUENT');
+    }
+
+    onSrNoChange();
+    document.getElementById('lastSrNoInput').focus();
+    document.getElementById('srNoBox').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function hideSrNoInput() {
+    document.getElementById('srNoBox').style.display = 'none';
+  }
+
+  function onSrNoChange() {
+    const val  = parseInt(document.getElementById('lastSrNoInput').value) || 0;
+    const next = val + 1;
+    document.getElementById('nextSrNoDisplay').textContent = 'Sr. No. ' + next;
+    document.getElementById('nextSrNoNote').textContent    = val === 0
+      ? ' se (fresh start)' : ' se (last printed: ' + val + ')';
+    // Mark as user-edited so auto-fill doesn't override
+    document.getElementById('lastSrNoInput').dataset.userEdited = '1';
+  }
+
+  function loadTransactionsWithSrNo() {
+    // ✅ Store in global — async callback mein bhi readable rahega
+    manualStartSrNo = parseInt(document.getElementById('lastSrNoInput').value) || 0;
+    hideSrNoInput();
+    selectedPrintType = 'SUBSEQUENT';
+    showMessage('Loading transactions from Sr. No. ' + (manualStartSrNo + 1) + '...', 'info');
+    showLoading('previewContent');
+    document.getElementById('transactionsPreview').style.display = 'block';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (!res) {
+          showMessage('❌ Server returned no response. Try again.', 'error');
+          document.getElementById('transactionsPreview').style.display = 'none';
+          return;
+        }
+        displayTransactions(res);
+      })
+      .withFailureHandler(function(err) {
+        showMessage('❌ Error: ' + (err.message || err), 'error');
+        document.getElementById('transactionsPreview').style.display = 'none';
+      })
+      .getPassbookTransactions(selectedAccount.accountNumber, 'SUBSEQUENT');
+  }
+
+  // ── Search ──
+  function searchAccount() {
+    const term = document.getElementById('searchInput').value.trim();
+    if (!term) { showMessage('Please enter account number, member ID, or name', 'error'); return; }
+    showLoading('searchResults');
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (!res) { showMessage('No response from server. Try again.', 'error'); return; }
+        displaySearchResults(res);
+      })
+      .withFailureHandler(function(err) {
+        showMessage('Error: ' + (err.message || err), 'error');
+        document.getElementById('searchResults').innerHTML = '';
+      })
+      .searchAccountForPassbook(term);
+  }
+
+  function displaySearchResults(res) {
+    const div = document.getElementById('searchResults');
+    if (!res.success || !res.results || res.results.length === 0) {
+      div.innerHTML = '<p style="color:#e74c3c;padding:15px;">❌ No accounts found.</p>';
+      div.style.display = 'block';
+      return;
+    }
+    let html = '<h4 style="margin:10px 0;color:#2c3e50;">Select Account:</h4>';
+    res.results.forEach(function(acc) {
+      html += '<div class="account-card" onclick=\'selectAccount(' +
+        JSON.stringify(acc).replace(/'/g, "&#39;") + ')\'>' +
+        '<h4>A/C: ' + escapeHtml(acc.accountNumber) + ' — ' + escapeHtml(acc.memberName) + '</h4>' +
+        '<p>Scheme: ' + escapeHtml(acc.schemeName) + ' | Member ID: ' + escapeHtml(acc.memberId) +
+        ' | Balance: ₹' + (acc.balance || 0).toFixed(2) + '</p>' +
+        '</div>';
+    });
+    div.innerHTML = html;
+    div.style.display = 'block';
+  }
+
+  function selectAccount(acc) {
+    selectedAccount = acc;
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('printTypeSection').style.display = 'block';
+    document.getElementById('printTypeSection').scrollIntoView({ behavior: 'smooth' });
+    showMessage('✅ Account selected: ' + acc.accountNumber + ' — ' + acc.memberName, 'success');
+  }
+
+  // ── Load Transactions ──
+  function loadTransactions(type) {
+    selectedPrintType = type;
+    showMessage('Loading transactions...', 'info');
+    showLoading('previewContent');
+    document.getElementById('transactionsPreview').style.display = 'block';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (!res) {
+          showMessage('❌ Server returned no response. Try again.', 'error');
+          document.getElementById('transactionsPreview').style.display = 'none';
+          return;
+        }
+        displayTransactions(res);
+      })
+      .withFailureHandler(function(err) {
+        showMessage('❌ Error: ' + (err.message || err), 'error');
+        document.getElementById('transactionsPreview').style.display = 'none';
+      })
+      .getPassbookTransactions(selectedAccount.accountNumber, type);
+  }
+
+  // ── Display & Build Print View ──
+  function displayTransactions(res) {
+    if (!res.success) {
+      showMessage('❌ ' + res.message, 'error');
+      document.getElementById('transactionsPreview').style.display = 'none';
+      return;
+    }
+
+    transactionsData = res;
+    const acc = res.accountInfo;
+
+    // Screen preview
+    let html = '<div style="background:#e8f5e9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:5px solid #27ae60;">' +
+      '<strong>✓ ' + acc.memberName + '</strong> | A/C: ' + acc.accountNumber +
+      ' | Scheme: ' + acc.schemeName +
+      ' | Balance: ₹' + (acc.currentBalance || 0).toFixed(2) +
+      ' | ' + res.totalTransactions + ' transactions' +
+      ' | <strong>Operator: ' + currentUser + '</strong>' +   // ✅ screen preview mein bhi
+      '</div>';
+
+    html += '<table class="transactions-table"><thead><tr>' +
+      '<th>Date</th><th>Particulars</th><th>Deposit (₹)</th><th>Withdrawal (₹)</th><th>Balance (₹)</th>' +
+      '</tr></thead><tbody>';
+    res.transactions.forEach(function(t) {
+      const isW = t.amount < 0 || (t.type && t.type.toUpperCase().indexOf('WITH') !== -1);
+      const abs = Math.abs(t.amount).toFixed(2);
+      html += '<tr><td>' + escapeHtml(t.date||'') + '</td><td>' + escapeHtml(t.type||'') + '</td>' +
+        '<td class="credit">' + (!isW ? abs : '—') + '</td>' +
+        '<td style="color:#c0392b;">' + (isW ? abs : '—') + '</td>' +
+        '<td>' + (t.balance||0).toFixed(2) + '</td></tr>'; // ✅ XSS fix
+    });
+    html += '</tbody></table>';
+    document.getElementById('previewContent').innerHTML = html;
+
+    // Build print pages
+    if (selectedPrintType === 'NEW') {
+      buildCoverPage(acc, res);
+      document.getElementById('pbTxnPage').innerHTML = '';
+    } else {
+      document.getElementById('pbCoverPage').innerHTML = '';
+      // ✅ Use global manualStartSrNo — set before GAS call, safe in async
+      buildTxnPage(acc, res, manualStartSrNo);
+    }
+
+    const actions = document.getElementById('printActions');
+    actions.style.display = 'flex';
+    const msg = selectedPrintType === 'NEW'
+      ? '✅ Cover page ready!'
+      : '✅ ' + res.totalTransactions + ' transactions ready!';
+    showMessage(msg, 'success');
+    document.getElementById('transactionsPreview').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ── Build Cover Page ──
+  function buildCoverPage(acc, res) {
+    const nominee  = selectedAccount.nomineeName  || '';
+    const rel      = selectedAccount.relationship || '';
+    const hasNominee = nominee && nominee.trim() !== '';
+    const printedOn  = new Date().toLocaleDateString('en-IN');
+    const printedTime = new Date().toLocaleString('en-IN');
+
+    const html = `
+      <div class="pb-cover">
+        <div class="pb-cover-header">
+          <div class="pb-logo">🏦</div>
+          <h2>BRANCH PASSBOOK</h2>
+          <div class="branch-info">
+            Branch: <strong>${escapeHtml(selectedAccount.branchCode || '—')}</strong>
+            &nbsp;|&nbsp; Date: ${printedOn}
+          </div>
+        </div>
+
+        <div class="pb-cover-body">
+          <div class="pb-cover-photo-row">
+            <div class="pb-photo-box">📷<br>Photo</div>
+            <div class="pb-info-grid">
+              <div class="pb-row">
+                <span class="pb-label">Member ID</span>
+                <span class="pb-value large">${escapeHtml(selectedAccount.memberId || '—')}</span>
+              </div>
+              <div class="pb-row">
+                <span class="pb-label">Name</span>
+                <span class="pb-value large">${escapeHtml(acc.memberName || '')}</span>
+              </div>
+              <div class="pb-row">
+                <span class="pb-label">Account No</span>
+                <span class="pb-value large">${escapeHtml(acc.accountNumber || '')}
+                  <span class="pb-badge">${escapeHtml(acc.schemeName || '')}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <hr class="pb-divider">
+
+          <div class="pb-row">
+            <span class="pb-label">Date of Open</span>
+            <span class="pb-value">${escapeHtml(selectedAccount.openDate || acc.openingDate || '—')}</span>
+            <span class="pb-label" style="margin-left:20px;">Date of Birth</span>
+            <span class="pb-value">${escapeHtml(selectedAccount.dob || '—')}</span>
+          </div>
+          <div class="pb-row">
+            <span class="pb-label">Branch Code</span>
+            <span class="pb-value">${escapeHtml(selectedAccount.branchCode || '—')}</span>
+            <span class="pb-label" style="margin-left:20px;">Scheme</span>
+            <span class="pb-value">${escapeHtml(acc.schemeName || '')}</span>
+          </div>
+
+          <hr class="pb-divider">
+
+          <div class="pb-nominee-box">
+            <div class="pb-row" style="border:none;margin:0;padding:0;">
+              <span class="pb-label">Nominee</span>
+              <span class="pb-value">${hasNominee ? escapeHtml(nominee) + ' (' + escapeHtml(rel) + ')' : 'Not Registered'}</span>
+              <span class="pb-badge" style="background:${hasNominee ? '#2e7d32' : '#c62828'};">
+                ${hasNominee ? 'YES' : 'NO'}
+              </span>
+            </div>
+          </div>
+
+          <div class="pb-instructions">
+            <h4>⚠️ Important Instructions</h4>
+            <ol>
+              <li>This passbook is the property of the account holder. Keep it safe.</li>
+              <li>Entries are for reference only. Bank statement is the official record.</li>
+              <li>Do not overwrite or tamper with any entries.</li>
+              <li>Present passbook at branch for updates.</li>
+              <li>In case of discrepancy, contact branch within 30 days.</li>
+              <li>Nominee details can be updated at branch with valid ID proof.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- ✅ Footer mein OPERATOR ID clearly dikhta hai -->
+        <div class="pb-cover-footer">
+          Issued: ${printedTime}
+          &nbsp;|&nbsp;
+          <strong>Printed By: ${currentUser}</strong>
+          &nbsp;|&nbsp; For queries contact your branch
+        </div>
+      </div>
+    `;
+    document.getElementById('pbCoverPage').innerHTML = html;
+  }
+
+  // ── Build Transactions Page ──────────────────────────────────
+  // manualStartSr = operator-set last printed Sr. No. (global variable)
+  // NO header ever — sirf pure data rows
+  function buildTxnPage(acc, res, manualStartSr) {
+    var ROWS_PER_PAGE = 25;
+    var startAfter    = parseInt(manualStartSr) || 0;
+    var txns          = res.transactions || [];
+
+    if (txns.length === 0) {
+      document.getElementById('pbTxnPage').innerHTML =
+        '<div style="padding:20px;text-align:center;color:#27ae60;font-family:sans-serif;">' +
+        '\u2705 Koi nayi transaction nahi — passbook up to date hai.</div>';
+      return;
+    }
+
+    var srNo     = startAfter + 1;
+    var allPages = [];
+    var pageRows = '';
+    var rowCount = 0;
+
+    for (var i = 0; i < txns.length; i++) {
+      var t = txns[i];
+
+      if (rowCount > 0 && rowCount >= ROWS_PER_PAGE) {
+        allPages.push(_buildPage(pageRows));
+        pageRows = '';
+        rowCount = 0;
+      }
+
+      var isW = (parseFloat(t.amount) < 0) ||
+        (t.type && (
+          t.type.toUpperCase().indexOf('WITH')  !== -1 ||
+          t.type.toUpperCase().indexOf('CLOSE') !== -1 ||
+          t.type.toUpperCase().indexOf('DEBIT') !== -1
+        ));
+      var amt  = Math.abs(parseFloat(t.amount) || 0).toFixed(2);
+      var desc = String(t.type || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      if (desc.length > 30) desc = desc.substring(0, 29) + '\u2026';
+
+      var d = String(t.date || '');
+      if (d.length > 8) {
+        var dt = new Date(d);
+        if (!isNaN(dt.getTime())) {
+          d = ('0'+dt.getDate()).slice(-2) + '-' +
+              ('0'+(dt.getMonth()+1)).slice(-2) + '-' +
+              String(dt.getFullYear()).slice(-2);
+        }
+      }
+
+      pageRows +=
+        '<tr>' +
+          '<td class="pb-col-sr">'   + srNo                                   + '</td>' +
+          '<td class="pb-col-date">' + d                                       + '</td>' +
+          '<td class="pb-col-desc">' + desc                                    + '</td>' +
+          '<td class="pb-col-dep">'  + (!isW ? amt : '')                      + '</td>' +
+          '<td class="pb-col-with">' + (isW  ? amt : '')                      + '</td>' +
+          '<td class="pb-col-bal">'  + (parseFloat(t.balance)||0).toFixed(2) + '</td>' +
+          '<td class="pb-col-init">'                                            + '</td>' +
+        '</tr>';
+      srNo++;
+      rowCount++;
+    }
+
+    if (pageRows) allPages.push(_buildPage(pageRows));
+    document.getElementById('pbTxnPage').innerHTML = allPages.join('');
+  }
+
+  // ── One page — ONLY rows, zero header, zero footer ───────────
+  function _buildPage(rowsHtml) {
+    return '<div class="pb-page pb-txn-page">' +
+      '<table class="pb-txn-table" style="table-layout:fixed;width:100%;border-collapse:collapse;">' +
+        '<colgroup>' +
+          '<col style="width:22px;">' +
+          '<col style="width:58px;">' +
+          '<col>' +
+          '<col style="width:68px;">' +
+          '<col style="width:68px;">' +
+          '<col style="width:72px;">' +
+          '<col style="width:38px;">' +
+        '</colgroup>' +
+        '<tbody>' + rowsHtml + '</tbody>' +
+      '</table>' +
+    '</div>';
+  }
+
+
+  // ── Print ──
+  function confirmAndPrint() {
+    const label = selectedPrintType === 'NEW' ? 'COVER PAGE' : 'TRANSACTIONS';
+    if (!confirm('Print ' + label + ' for ' + selectedAccount.memberName +
+                 '?\n\nOperator: ' + currentUser)) return;
+
+    window.print();
+
+    if (selectedPrintType === 'SUBSEQUENT') {
+      const txnIds = transactionsData.transactions.map(function(t) { return t.txnId; });
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res) return;
+          if (res.success) {
+            showMessage('✅ ' + res.message, 'success');
+            setTimeout(resetForm, 3000);
+          } else {
+            showMessage('⚠️ Print done but marking failed: ' + res.message, 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          showMessage('⚠️ Print done but marking failed: ' + (err.message || err), 'error');
+        })
+        .markTransactionsAsPrinted(selectedAccount.accountNumber, txnIds, currentUser);
+    } else {
+      showMessage('✅ Cover page printed by ' + currentUser + '!', 'success');
+      setTimeout(resetForm, 2000);
+    }
+  }
+
+  // ── Reset ──
+  function resetForm() {
+    selectedAccount = null; selectedPrintType = null; transactionsData = null;
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('printTypeSection').style.display = 'none';
+    document.getElementById('transactionsPreview').style.display = 'none';
+    document.getElementById('printActions').style.display = 'none';
+    document.getElementById('pbCoverPage').innerHTML = '';
+    document.getElementById('pbTxnPage').innerHTML = '';
+    document.getElementById('messageBox').style.display = 'none';
+    // Reset Sr. No. input
+    manualStartSrNo = 0;
+    const srInp = document.getElementById('lastSrNoInput');
+    if (srInp) { srInp.value = '0'; srInp.dataset.userEdited = ''; }
+    document.getElementById('srNoBox').style.display = 'none';
+    document.getElementById('srNoAutoInfo').style.display = 'none';
+    document.getElementById('nextSrNoDisplay').textContent = 'Sr. No. 1';
+    document.getElementById('nextSrNoNote').textContent = ' se';
+    document.getElementById('searchInput').focus();
+  }
+</script>
+</body>
+</html>

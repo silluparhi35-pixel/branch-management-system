@@ -1,0 +1,2688 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Portal - Branch Management System</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+    
+    /* LOGIN PAGE */
+    #loginPage {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .login-container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 400px;
+      width: 100%;
+      animation: slideUp 0.5s ease;
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      font-size: 40px;
+      color: white;
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .logo h1 {
+      font-size: 24px;
+      color: #2c3e50;
+      margin-bottom: 5px;
+    }
+    
+    .logo p {
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+    
+    /* DASHBOARD */
+    #dashboardPage {
+      display: none;
+      background: linear-gradient(180deg, #5B4B8A 0%, #764BA2 50%, #C94B8C 100%);
+      min-height: 100vh;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      padding: 25px 20px;
+      color: white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header h1 { font-size: 28px; margin-bottom: 5px; }
+    .header p { font-size: 14px; color: rgba(255,255,255,0.8); }
+    .header-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* TABS */
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      flex-wrap: wrap;
+    }
+    
+    .nav-tab {
+      padding: 12px 24px;
+      background: transparent;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 15px;
+      color: #7f8c8d;
+      transition: all 0.2s;
+    }
+    
+    .nav-tab:hover {
+      color: #3498db;
+      background: #f0f8ff;
+    }
+    
+    .nav-tab.active {
+      color: white;
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      border-color: #3498db;
+    }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border-left: 5px solid #3498db;
+    }
+    
+    .stat-card h3 {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    
+    .stat-card .number {
+      font-size: 36px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    
+    /* CARDS */
+    .branch-card, .user-card {
+      background: white;
+      padding: 25px;
+      margin: 15px 0;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .branch-card:hover, .user-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    
+    .branch-header, .user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .branch-header h3 {
+      font-size: 22px;
+      color: #2c3e50;
+      margin-bottom: 5px;
+    }
+    
+    .branch-code {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+    
+    .branch-details, .user-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .detail-item, .user-detail {
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 3px solid #3498db;
+    }
+    
+    .detail-item label, .user-detail label {
+      display: block;
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-bottom: 5px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    
+    .detail-item .value, .user-detail .value {
+      font-size: 15px;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+    
+    .user-info { flex: 1; }
+    .user-name {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 5px;
+    }
+    
+    .user-id {
+      font-size: 14px;
+      color: #7f8c8d;
+      font-family: monospace;
+    }
+    
+    .user-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    /* BADGES */
+    .status-badge, .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .status-active, .badge-active {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-inactive, .badge-inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .badge-supervisor {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .badge-operator {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    /* BUTTONS */
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2980b9, #21618c);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #27ae60, #229954);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: linear-gradient(135deg, #229954, #1e8449);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    }
+    
+    .btn-warning {
+      background: linear-gradient(135deg, #f39c12, #e67e22);
+      color: white;
+    }
+    
+    .btn-warning:hover {
+      background: linear-gradient(135deg, #e67e22, #d35400);
+      transform: translateY(-2px);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #c0392b, #a93226);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+    }
+    
+    .btn-secondary {
+      background: #95a5a6;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+    
+    /* FORMS */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 14px;
+    }
+    
+    .form-group label.required::after {
+      content: ' *';
+      color: #e74c3c;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #dfe6e9;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+      background: white;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .form-group small {
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+    
+    /* MODALS */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideIn 0.3s ease;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .modal-content h3 {
+      font-size: 24px;
+      color: #2c3e50;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #ecf0f1;
+    }
+    
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      justify-content: flex-end;
+    }
+    
+    /* ERROR/SUCCESS MESSAGES */
+    .error-message, .success-message {
+      display: none;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      border-left: 4px solid;
+    }
+    
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      border-left-color: #e74c3c;
+    }
+    
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      border-left-color: #27ae60;
+    }
+    
+    /* LOADING */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: #7f8c8d;
+    }
+    
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #7f8c8d;
+    }
+    
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    
+    .empty-state h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    
+    .empty-state p {
+      font-size: 16px;
+    }
+    
+    /* ACTIONS */
+    .branch-actions, .user-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .action-menu {
+      position: relative;
+      display: inline-block;
+    }
+    
+    /* PASSWORD DISPLAY */
+    .password-display {
+      background: #e8f5e9;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border-left: 4px solid #4caf50;
+    }
+    
+    .credentials {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-family: monospace;
+    }
+    
+    /* FILTERS */
+    .filters {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .filter-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 5px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+    
+    /* TREASURER */
+    .badge-treasurer {
+      background: #e8d5ff;
+      color: #6f42c1;
+    }
+    #officeFieldGroup { display: none; }
+    .office-card {
+      background: white;
+      padding: 25px;
+      margin: 15px 0;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border-left: 5px solid #8e44ad;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .office-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .header h1 { font-size: 22px; }
+      .stat-card .number { font-size: 28px; }
+      .branch-header, .user-header { flex-direction: column; }
+      .nav-tabs { overflow-x: auto; flex-wrap: nowrap; }
+      .modal-content { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN PAGE -->
+  <div id="loginPage">
+    <div class="login-container">
+      <div class="logo">
+        <div class="logo-icon">🔐</div>
+        <h1>Admin Portal</h1>
+        <p>Branch Management System</p>
+      </div>
+      
+      <div class="error-message" id="loginError"></div>
+      
+      <div class="form-group">
+        <label>Admin ID</label>
+        <input type="text" id="adminId" placeholder="Enter admin ID">
+      </div>
+      
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Enter password">
+      </div>
+      
+      <button class="btn btn-primary" onclick="login()" style="width: 100%; margin-top: 20px;">
+        🔑 Login
+      </button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PAGE -->
+  <div id="dashboardPage">
+    <div class="header">
+      <h1>👨‍💼 Admin Dashboard</h1>
+      <p id="welcomeMessage">Welcome, Admin!</p>
+      <div class="header-actions">
+        <button class="btn btn-warning" onclick="openChangePasswordModal()">🔒 Change Password</button>
+        <button class="btn btn-danger" onclick="logout()">🚪 Logout</button>
+      </div>
+    </div>
+    
+    <div class="container">
+      <!-- NAVIGATION TABS -->
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('overview')">📊 Overview</button>
+        <button class="nav-tab" onclick="switchTab('branches')">🏢 Branches</button>
+        <button class="nav-tab" onclick="switchTab('users')">👥 Users</button>
+        <button class="nav-tab" onclick="switchTab('cashoffice')">🏦 Cash Office</button>
+      </div>
+      
+      <!-- OVERVIEW TAB -->
+      <div id="overview" class="tab-content active">
+        <h2 style="color: white; margin-bottom: 20px; font-size: 28px;">📊 System Overview</h2>
+        
+        <div id="statsGrid" class="stats-grid" style="display: none;">
+          <div class="stat-card">
+            <h3>Total Branches</h3>
+            <div class="number" id="totalBranches">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Active Branches</h3>
+            <div class="number" id="activeBranches">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Inactive Branches</h3>
+            <div class="number" id="inactiveBranches">0</div>
+          </div>
+        </div>
+        
+        <div id="userStatsGrid" class="stats-grid" style="display: none; margin-top: 20px;">
+          <div class="stat-card">
+            <h3>Total Users</h3>
+            <div class="number" id="totalUsers">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Supervisors</h3>
+            <div class="number" id="totalSupervisors">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Operators</h3>
+            <div class="number" id="totalOperators">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>Active Users</h3>
+            <div class="number" id="activeUsers">0</div>
+          </div>
+        </div>
+        
+        <div class="empty-state">
+          <div class="empty-state-icon">🎯</div>
+          <h3>System Ready</h3>
+          <p>Navigate to Branches or Users tab to manage the system</p>
+        </div>
+      </div>
+      
+      <!-- CASH OFFICE TAB -->
+      <div id="cashoffice" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+          <h2 style="color: white; font-size: 28px;">🏦 Cash Office Management</h2>
+          <button class="btn btn-success" onclick="openCreateOfficeModal()">➕ Create Cash Office</button>
+        </div>
+        <div id="officeList"></div>
+      </div>
+      
+      <!-- BRANCHES TAB -->
+      <div id="branches" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+          <h2 style="color: white; font-size: 28px;">🏢 Branch Management</h2>
+          <button class="btn btn-success" onclick="openCreateBranchModal()">➕ Create New Branch</button>
+        </div>
+        
+        <div id="branchList"></div>
+      </div>
+      
+      <!-- USERS TAB -->
+      <div id="users" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+          <h2 style="color: white; font-size: 28px;">👥 User Management</h2>
+          <button class="btn btn-success" onclick="openCreateUserModal()">➕ Create New User</button>
+        </div>
+        
+        <!-- FILTERS -->
+        <div class="filters">
+          <h4 style="margin-bottom: 15px; color: #2c3e50;">🔍 Filter Users</h4>
+          <div class="filter-grid">
+            <div class="form-group" style="margin: 0;">
+              <label>Branch</label>
+              <select id="filterBranch" onchange="applyFilters()">
+                <option value="">All Branches</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label>Role</label>
+              <select id="filterRole" onchange="applyFilters()">
+                <option value="">All Roles</option>
+                <option value="SUPERVISOR">Supervisor</option>
+                <option value="OPERATOR">Operator</option>
+                <option value="TREASURER">Treasurer</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label>Status</label>
+              <select id="filterStatus" onchange="applyFilters()">
+                <option value="">All Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-secondary" onclick="clearFilters()">🔄 Clear Filters</button>
+          </div>
+        </div>
+        
+        <div id="userList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS - CREATE BRANCH -->
+  <div id="createBranchModal" class="modal">
+    <div class="modal-content">
+      <h3>➕ Create New Branch</h3>
+      <div class="error-message" id="createErrorMsg"></div>
+      
+      <div class="form-group">
+        <label class="required">Branch Code</label>
+        <input type="text" id="branchCode" placeholder="e.g., BR001" maxlength="10" style="text-transform: uppercase;">
+        <small>Unique identifier for the branch</small>
+      </div>
+      
+      <div class="form-group">
+        <label class="required">Branch Name</label>
+        <input type="text" id="branchName" placeholder="Enter branch name">
+      </div>
+      
+      <div class="form-group">
+        <label class="required">PIN Code</label>
+        <input type="text" id="pinCode" placeholder="e.g., 110001" maxlength="6">
+      </div>
+      
+      <div class="form-group">
+        <label>Address</label>
+        <textarea id="address" placeholder="Enter full address (optional)"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label>Contact Number</label>
+        <input type="tel" id="contact" placeholder="Phone number (optional)" maxlength="10">
+      </div>
+      
+      <div class="form-group">
+        <label>Supervisor ID</label>
+        <input type="text" id="supervisorId" placeholder="Assign supervisor (optional)">
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeCreateBranchModal()">Cancel</button>
+        <button class="btn btn-success" onclick="submitCreateBranch()">✅ Create Branch</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS - EDIT BRANCH -->
+  <div id="editBranchModal" class="modal">
+    <div class="modal-content">
+      <h3>✏️ Edit Branch</h3>
+      <div class="error-message" id="editErrorMsg"></div>
+      
+      <input type="hidden" id="editRowIndex">
+      <input type="hidden" id="editBranchCode">
+      
+      <div class="form-group">
+        <label>Branch Code (Read-only)</label>
+        <input type="text" id="editBranchCodeDisplay" disabled>
+      </div>
+      
+      <div class="form-group">
+        <label class="required">Branch Name</label>
+        <input type="text" id="editBranchName">
+      </div>
+      
+      <div class="form-group">
+        <label>Address</label>
+        <textarea id="editAddress"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label>Contact Number</label>
+        <input type="text" id="editContact">
+      </div>
+      
+      <div class="form-group">
+        <label>Status</label>
+        <select id="editStatus">
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Supervisor ID</label>
+        <input type="text" id="editSupervisorId">
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeEditBranchModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitEditBranch()">💾 Update Branch</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- MODALS - CREATE USER -->
+  <div id="createUserModal" class="modal">
+    <div class="modal-content">
+      <h3>➕ Create New User</h3>
+      <div class="error-message" id="createUserError"></div>
+      
+      <div class="form-group">
+        <label class="required">User ID</label>
+        <input type="text" id="createUserId" placeholder="e.g., SUP001 or OP001" 
+               style="text-transform: uppercase;" maxlength="20" required>
+        <small style="color: #7f8c8d;">Must be unique. Will be checked automatically.</small>
+      </div>
+      
+      <div class="form-group">
+        <label class="required">Full Name</label>
+        <input type="text" id="createUserName" placeholder="Enter full name" required>
+      </div>
+      
+      <div class="form-group">
+        <label class="required">Role</label>
+        <select id="createUserRole" required onchange="onRoleChange()">
+          <option value="">Select Role</option>
+          <option value="SUPERVISOR">Supervisor</option>
+          <option value="OPERATOR">Operator</option>
+          <option value="TREASURER">Treasurer (Cash Office)</option>
+        </select>
+      </div>
+      
+      <!-- Branch field (hidden for TREASURER) -->
+      <div class="form-group" id="branchFieldGroup">
+        <label class="required" id="branchFieldLabel">Branch</label>
+        <select id="createUserBranch">
+          <option value="">Select Branch</option>
+        </select>
+      </div>
+
+      <!-- Office field (shown only for TREASURER) -->
+      <div class="form-group" id="officeFieldGroup">
+        <label>Assign Cash Office <span style="color:#7f8c8d;font-weight:normal;">(optional)</span></label>
+        <select id="createUserOffice">
+          <option value="">-- Select Office (Optional) --</option>
+        </select>
+        <small style="color: #7f8c8d;">Treasurer ko ek Cash Office assign kar sakte ho</small>
+      </div>
+      
+      <div class="form-group">
+        <label>Contact Number</label>
+        <input type="tel" id="createUserContact" maxlength="10" placeholder="9876543210">
+      </div>
+      
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="createUserEmail" placeholder="user@example.com">
+      </div>
+      
+      <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #2196f3;">
+        <strong style="color: #1565c0;">📝 Note:</strong>
+        <p style="margin: 5px 0 0 0; font-size: 13px; color: #1565c0;">
+          Default password will be: <strong>Rrn@123</strong><br>
+        </p>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeCreateUserModal()">Cancel</button>
+        <button class="btn btn-success" onclick="submitCreateUser()">✅ Create User</button>
+      </div>
+    </div>
+  </div>
+  
+  
+  <!-- MODALS - USER CREATED SUCCESS -->
+  <div id="successModal" class="modal">
+    <div class="modal-content">
+      <h3>✅ User Created Successfully!</h3>
+      
+      <div class="password-display">
+        <strong>🔑 Login Credentials</strong>
+        <div class="credentials">
+          <div style="margin-bottom: 10px;">
+            <strong>User ID:</strong> <span id="createdUserId"></span>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <strong>Password:</strong> <span id="createdPassword"></span>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <strong>Role:</strong> <span id="createdRole"></span>
+          </div>
+          <div>
+            <strong>Branch:</strong> <span id="createdBranch"></span>
+          </div>
+        </div>
+      </div>
+      
+      <div style="background: #fff3cd; padding: 12px; border-radius: 6px; border-left: 4px solid #ffc107;">
+        <strong style="color: #856404;">⚠️ Important:</strong>
+        <p style="margin: 5px 0 0 0; font-size: 13px; color: #856404;">
+          Please save these credentials securely. The user should change the password after first login.
+        </p>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="copyCredentials()">📋 Copy Credentials</button>
+        <button class="btn btn-success" onclick="closeSuccessModal()">✅ Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS - EDIT USER -->
+  <div id="editUserModal" class="modal">
+    <div class="modal-content">
+      <h3>✏️ Edit User Details</h3>
+      <div class="error-message" id="editUserError"></div>
+      
+      <input type="hidden" id="editUserId">
+      
+      <div class="form-group">
+        <label>User ID (Read-only)</label>
+        <input type="text" id="editUserIdDisplay" disabled>
+      </div>
+      
+      <div class="form-group">
+        <label class="required">Full Name</label>
+        <input type="text" id="editUserName" required>
+      </div>
+      
+      <div class="form-group">
+        <label>Contact Number</label>
+        <input type="tel" id="editUserContact" maxlength="10">
+      </div>
+      
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="editUserEmail">
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeEditUserModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitEditUser()">💾 Update User</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS - TRANSFER USER -->
+  <div id="transferUserModal" class="modal">
+    <div class="modal-content">
+      <h3>🔄 Transfer User to Another Branch</h3>
+      <div class="error-message" id="transferError"></div>
+      
+      <input type="hidden" id="transferUserId">
+      
+      <div class="form-group">
+        <label>User</label>
+        <input type="text" id="transferUserDisplay" disabled>
+      </div>
+      
+      <div class="form-group">
+        <label>Current Branch</label>
+        <input type="text" id="transferCurrentBranch" disabled>
+      </div>
+      
+      <div class="form-group">
+        <label class="required">Transfer to Branch</label>
+        <select id="transferNewBranch" required>
+          <option value="">Select New Branch</option>
+        </select>
+      </div>
+      
+      <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #ffc107;">
+        <strong style="color: #856404;">⚠️ Important:</strong>
+        <p style="margin: 5px 0 0 0; font-size: 13px; color: #856404;">
+          This will move the user to a different branch. All their data will remain intact.
+        </p>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeTransferUserModal()">Cancel</button>
+        <button class="btn btn-warning" onclick="submitTransferUser()">🔄 Transfer User</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS - CHANGE PASSWORD -->
+  <div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+      <h3>🔒 Change Admin Password</h3>
+      <div class="error-message" id="passwordErrorMsg"></div>
+      <div class="success-message" id="passwordSuccessMsg"></div>
+      
+      <div class="form-group">
+        <label class="required">Current Password</label>
+        <input type="password" id="currentPassword" required>
+      </div>
+      
+      <div class="form-group">
+        <label class="required">New Password</label>
+        <input type="password" id="newPassword" required>
+        <small>Minimum 6 characters</small>
+      </div>
+      
+      <div class="form-group">
+        <label class="required">Confirm New Password</label>
+        <input type="password" id="confirmPassword" required>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeChangePasswordModal()">Cancel</button>
+        <button class="btn btn-success" onclick="submitChangePassword()">🔒 Change Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS - CREATE CASH OFFICE -->
+  <div id="createOfficeModal" class="modal">
+    <div class="modal-content">
+      <h3>🏦 Create New Cash Office</h3>
+      <div class="error-message" id="createOfficeError"></div>
+      <div class="form-group">
+        <label class="required">Office ID</label>
+        <input type="text" id="newOfficeId" placeholder="e.g., CO001" maxlength="20" style="text-transform:uppercase;">
+        <small>Unique identifier for this Cash Office</small>
+      </div>
+      <div class="form-group">
+        <label class="required">Office Name</label>
+        <input type="text" id="newOfficeName" placeholder="e.g., Head Office Cash Counter">
+      </div>
+      <div class="form-group">
+        <label>Address</label>
+        <textarea id="newOfficeAddress" placeholder="Full address (optional)" style="min-height:80px;"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Contact</label>
+        <input type="tel" id="newOfficeContact" placeholder="Phone number (optional)" maxlength="10">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeCreateOfficeModal()">Cancel</button>
+        <button class="btn btn-success" onclick="submitCreateOffice()">✅ Create Office</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS - MAP BRANCH TO OFFICE -->
+  <div id="mapBranchToOfficeModal" class="modal">
+    <div class="modal-content" style="max-width:450px;">
+      <h3>🔗 Map Branch to Office</h3>
+      <p id="mapBranchOfficeTitle" style="color:#7f8c8d;margin-bottom:20px;font-size:14px;"></p>
+      <div class="error-message" id="mapBranchOfficeError"></div>
+      <div class="form-group">
+        <label class="required">Select Branch</label>
+        <select id="mapBranchForOfficeSelect">
+          <option value="">-- Select Branch --</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeMapBranchToOfficeModal()">Cancel</button>
+        <button class="btn btn-success" onclick="submitMapBranchToOffice()">✅ Map Branch</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS - REMOVE BRANCH FROM OFFICE -->
+  <div id="removeBranchFromOfficeModal" class="modal">
+    <div class="modal-content" style="max-width:500px;">
+      <h3>🔴 Remove Branch from Cash Office</h3>
+      <p id="removeBranchOfficeTitle" style="color:#7f8c8d;margin-bottom:20px;font-size:14px;"></p>
+      <div class="error-message" id="removeBranchOfficeError"></div>
+      <div class="success-message" id="removeBranchOfficeSuccess"></div>
+
+      <div id="removeBranchList" style="min-height:80px;">
+        <div class="loading" style="display:block;"><div class="spinner"></div><p>Loading mapped branches...</p></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeRemoveBranchFromOfficeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // GLOBAL VARIABLES
+    // ==========================================
+    
+    let currentAdminId = '';
+    let currentAdminName = '';
+    let allBranches = [];
+    let allUsers = [];
+    
+    // ==========================================
+    // LOGIN & AUTHENTICATION
+    // ==========================================
+    
+    function login() {
+      const adminId = document.getElementById('adminId').value.trim();
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('loginError');
+      
+      errorDiv.style.display = 'none';
+      
+      if (!adminId || !password) {
+        errorDiv.textContent = '❌ Please enter Admin ID and Password';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            currentAdminId = result.adminId;
+            currentAdminName = result.adminName;
+            
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboardPage').style.display = 'block';
+            document.getElementById('welcomeMessage').textContent = 
+              `Welcome, ${currentAdminName} (${currentAdminId})`;
+            
+            // Load initial data
+            loadBranches();
+            loadUsers();
+            loadUserStatistics();
+          } else {
+            errorDiv.textContent = '❌ ' + result.message;
+            errorDiv.style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(error) {
+          errorDiv.textContent = '❌ Error: ' + error.message;
+          errorDiv.style.display = 'block';
+        })
+        .adminLogin(adminId, password);
+    }
+    
+    // ==========================================
+    // TAB NAVIGATION
+    // ==========================================
+    
+    function switchTab(tabName) {
+      // Hide all tabs
+      const tabs = document.querySelectorAll('.tab-content');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      
+      // Remove active from all nav buttons
+      const navTabs = document.querySelectorAll('.nav-tab');
+      navTabs.forEach(tab => tab.classList.remove('active'));
+      
+      // Show selected tab
+      document.getElementById(tabName).classList.add('active');
+      
+      // Add active to clicked nav button
+      event.target.classList.add('active');
+      
+      // Load data if needed
+      if (tabName === 'branches') {
+        loadBranches();
+      } else if (tabName === 'users') {
+        loadUsers();
+      } else if (tabName === 'cashoffice') {
+        loadCashOffices();
+      }
+    }
+    
+    // ==========================================
+    // BRANCH MANAGEMENT
+    // ==========================================
+    
+    function openCreateBranchModal() {
+      document.getElementById('createBranchModal').style.display = 'flex';
+      document.getElementById('createErrorMsg').style.display = 'none';
+      // Clear form
+      document.getElementById('branchCode').value = '';
+      document.getElementById('branchName').value = '';
+      document.getElementById('pinCode').value = '';
+      document.getElementById('address').value = '';
+      document.getElementById('contact').value = '';
+      document.getElementById('supervisorId').value = '';
+    }
+    
+    function closeCreateBranchModal() {
+      document.getElementById('createBranchModal').style.display = 'none';
+    }
+    
+    function submitCreateBranch() {
+      const errorDiv = document.getElementById('createErrorMsg');
+      errorDiv.style.display = 'none';
+      
+      const branchData = {
+        branchCode: document.getElementById('branchCode').value.trim().toUpperCase(),
+        branchName: document.getElementById('branchName').value.trim(),
+        pinCode: document.getElementById('pinCode').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        contact: document.getElementById('contact').value.trim(),
+        supervisorId: document.getElementById('supervisorId').value.trim()
+      };
+      
+      // Validate required fields
+      if (!branchData.branchCode || !branchData.branchName || !branchData.pinCode) {
+        errorDiv.textContent = '❌ Please fill in all required fields!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (!/^\d{6}$/.test(branchData.pinCode)) {
+        errorDiv.textContent = '❌ PIN Code must be exactly 6 digits!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (branchData.contact && !/^\d{10}$/.test(branchData.contact)) {
+        errorDiv.textContent = '❌ Contact number must be 10 digits!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            alert('✅ ' + result.message);
+            closeCreateBranchModal();
+            loadBranches();
+          } else {
+            errorDiv.textContent = '❌ ' + result.message;
+            errorDiv.style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(error) {
+          errorDiv.textContent = '❌ Error: ' + error.message;
+          errorDiv.style.display = 'block';
+        })
+        .createBranch(branchData, currentAdminId);
+    }
+    
+    function loadBranches() {
+      const listDiv = document.getElementById('branchList');
+      listDiv.innerHTML = '<div class="loading" style="display:block;"><div class="spinner"></div><p>Loading...</p></div>';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            allBranches = result.branches;
+            updateStats(result.branches);
+            displayBranches(result.branches);
+            updateBranchFilters();
+          } else {
+            listDiv.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><h3>Error</h3><p>${result.message}</p></div>`;
+          }
+        })
+        .withFailureHandler(function(error) {
+          listDiv.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><h3>Error</h3><p>${error.message}</p></div>`;
+        })
+        .getBranchList(currentAdminId);
+    }
+    
+    function updateStats(branches) {
+      const total = branches.length;
+      const active = branches.filter(b => b.status === 'ACTIVE').length;
+      const inactive = total - active;
+      
+      const totalElem = document.getElementById('totalBranches');
+      const activeElem = document.getElementById('activeBranches');
+      const inactiveElem = document.getElementById('inactiveBranches');
+      
+      if (totalElem) totalElem.textContent = total;
+      if (activeElem) activeElem.textContent = active;
+      if (inactiveElem) inactiveElem.textContent = inactive;
+      
+      const statsGrid = document.getElementById('statsGrid');
+      if (statsGrid) statsGrid.style.display = total > 0 ? 'grid' : 'none';
+    }
+    
+    function displayBranches(branches) {
+      const listDiv = document.getElementById('branchList');
+      
+      if (branches.length === 0) {
+        listDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏢</div><h3>No Branches Yet</h3><p>Click "Create New Branch" to add your first branch</p></div>';
+        return;
+      }
+      
+      let html = '';
+      branches.forEach(branch => {
+        const statusClass = branch.status === 'ACTIVE' ? 'status-active' : 'status-inactive';
+        html += `
+          <div class="branch-card">
+            <div class="branch-header">
+              <div>
+                <h3>${branch.branchName}</h3>
+                <span class="branch-code">${branch.branchCode}</span>
+              </div>
+              <span class="status-badge ${statusClass}">${branch.status}</span>
+            </div>
+            <div class="branch-details">
+              <div class="detail-item">
+                <label>PIN Code</label>
+                <div class="value">${branch.pinCode}</div>
+              </div>
+              <div class="detail-item">
+                <label>Contact</label>
+                <div class="value">${branch.contact || 'Not provided'}</div>
+              </div>
+              <div class="detail-item">
+                <label>Supervisor</label>
+                <div class="value">${branch.supervisorId || 'Not assigned'}</div>
+              </div>
+              <div class="detail-item">
+                <label>Created Date</label>
+                <div class="value">${branch.createdDate}</div>
+              </div>
+            </div>
+            ${branch.address ? `<div class="detail-item" style="margin: 15px 0;"><label>Address</label><div class="value">${branch.address}</div></div>` : ''}
+            <div class="branch-actions">
+              <button class="btn btn-primary" onclick='editBranch(${JSON.stringify(branch)})'>✏️ Edit</button>
+              <button class="btn btn-danger" onclick="deleteBranch(${branch.rowIndex}, '${branch.branchCode}', '${branch.branchName}')">🗑️ Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      listDiv.innerHTML = html;
+    }
+    
+    function editBranch(branch) {
+      document.getElementById('editRowIndex').value = branch.rowIndex;
+      document.getElementById('editBranchCode').value = branch.branchCode;
+      document.getElementById('editBranchCodeDisplay').value = branch.branchCode;
+      document.getElementById('editBranchName').value = branch.branchName;
+      document.getElementById('editAddress').value = branch.address;
+      document.getElementById('editContact').value = branch.contact;
+      document.getElementById('editStatus').value = branch.status;
+      document.getElementById('editSupervisorId').value = branch.supervisorId;
+      document.getElementById('editBranchModal').style.display = 'flex';
+      document.getElementById('editErrorMsg').style.display = 'none';
+    }
+    
+    function closeEditBranchModal() {
+      document.getElementById('editBranchModal').style.display = 'none';
+    }
+    
+    function submitEditBranch() {
+      const errorDiv = document.getElementById('editErrorMsg');
+      errorDiv.style.display = 'none';
+      
+      const updateData = {
+        rowIndex: parseInt(document.getElementById('editRowIndex').value),
+        branchCode: document.getElementById('editBranchCode').value,
+        branchName: document.getElementById('editBranchName').value.trim(),
+        address: document.getElementById('editAddress').value.trim(),
+        contact: document.getElementById('editContact').value.trim(),
+        status: document.getElementById('editStatus').value,
+        supervisorId: document.getElementById('editSupervisorId').value.trim()
+      };
+      
+      if (!updateData.branchName) {
+        errorDiv.textContent = '❌ Branch name is required!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (updateData.contact && !/^\d{10}$/.test(updateData.contact)) {
+        errorDiv.textContent = '❌ Contact number must be 10 digits!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            alert('✅ ' + result.message);
+            closeEditBranchModal();
+            loadBranches();
+          } else {
+            errorDiv.textContent = '❌ ' + result.message;
+            errorDiv.style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(error) {
+          errorDiv.textContent = '❌ Error: ' + error.message;
+          errorDiv.style.display = 'block';
+        })
+        .updateBranch(updateData, currentAdminId);
+    }
+    
+    function deleteBranch(rowIndex, branchCode, branchName) {
+      if (!confirm(`⚠️ DELETE BRANCH?\n\nBranch: ${branchName}\nCode: ${branchCode}\n\nThis will permanently delete the branch from the system.\n\nThis action CANNOT be undone!`)) {
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            alert('✅ ' + result.message);
+            loadBranches();
+          } else {
+            alert('❌ ' + result.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('❌ Error: ' + error.message);
+        })
+        .deleteBranch(rowIndex, currentAdminId);
+    }
+
+    // ==========================================
+    // BRANCH FILTERS - MISSING FUNCTION ADDED
+    // ==========================================
+    
+    function updateBranchFilters() {
+      // Update branch filter dropdown in users tab
+      const filterBranchSelect = document.getElementById('filterBranch');
+      const createUserBranchSelect = document.getElementById('createUserBranch');
+      
+      if (filterBranchSelect) {
+        // Clear existing options except first
+        while (filterBranchSelect.options.length > 1) {
+          filterBranchSelect.remove(1);
+        }
+        
+        // Add active branches
+        allBranches.forEach(branch => {
+          if (branch.status === 'ACTIVE') {
+            const option = document.createElement('option');
+            option.value = branch.branchCode;
+            option.textContent = branch.branchCode + ' - ' + branch.branchName;
+            filterBranchSelect.appendChild(option);
+          }
+        });
+      }
+      
+      // Update create user branch dropdown
+      if (createUserBranchSelect) {
+        // Clear existing options except first
+        while (createUserBranchSelect.options.length > 1) {
+          createUserBranchSelect.remove(1);
+        }
+        
+        // Add active branches
+        allBranches.forEach(branch => {
+          if (branch.status === 'ACTIVE') {
+            const option = document.createElement('option');
+            option.value = branch.branchCode;
+            option.textContent = branch.branchCode + ' - ' + branch.branchName;
+            createUserBranchSelect.appendChild(option);
+          }
+        });
+      }
+    }
+    
+    // ==========================================
+    // USER MANAGEMENT
+    // ==========================================
+    
+    function loadUsers() {
+      const userListElem = document.getElementById('userList');
+      if (userListElem) {
+        userListElem.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading users...</p></div>';
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            allUsers = result.users;
+            applyFilters();
+          } else {
+            if (userListElem) {
+              userListElem.innerHTML = `
+                <div class="empty-state">
+                  <div class="empty-state-icon">❌</div>
+                  <h3>Error</h3>
+                  <p>${result.message}</p>
+                </div>
+              `;
+            }
+          }
+        })
+        .withFailureHandler(function(error) {
+          if (userListElem) {
+            userListElem.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-state-icon">❌</div>
+                <h3>Error</h3>
+                <p>${error.message}</p>
+              </div>
+            `;
+          }
+        })
+        .getAllUsers(currentAdminId);
+    }
+    
+    function loadUserStatistics() {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            const totalUsersElem = document.getElementById('totalUsers');
+            const totalSupervisorsElem = document.getElementById('totalSupervisors');
+            const totalOperatorsElem = document.getElementById('totalOperators');
+            const activeUsersElem = document.getElementById('activeUsers');
+            const userStatsGridElem = document.getElementById('userStatsGrid');
+            
+            if (totalUsersElem) totalUsersElem.textContent = result.stats.total;
+            if (totalSupervisorsElem) totalSupervisorsElem.textContent = result.stats.supervisors;
+            if (totalOperatorsElem) totalOperatorsElem.textContent = result.stats.operators;
+            if (activeUsersElem) activeUsersElem.textContent = result.stats.active;
+            if (userStatsGridElem) userStatsGridElem.style.display = result.stats.total > 0 ? 'grid' : 'none';
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('Load statistics error:', error);
+        })
+        .getUserStatistics(currentAdminId);
+    }
+    
+    // ==========================================
+    // FILTER & DISPLAY
+    // ==========================================
+    
+    function applyFilters() {
+      const filterBranchElem = document.getElementById('filterBranch');
+      const filterRoleElem = document.getElementById('filterRole');
+      const filterStatusElem = document.getElementById('filterStatus');
+      
+      const branchFilter = filterBranchElem ? filterBranchElem.value : '';
+      const roleFilter = filterRoleElem ? filterRoleElem.value : '';
+      const statusFilter = filterStatusElem ? filterStatusElem.value : '';
+      
+      let filtered = allUsers.filter(user => {
+        if (branchFilter && user.branchCode !== branchFilter) return false;
+        if (roleFilter && user.role !== roleFilter) return false;
+        if (statusFilter && user.status !== statusFilter) return false;
+        return true;
+      });
+      
+      displayUsers(filtered);
+    }
+    
+    function clearFilters() {
+      const filterBranchElem = document.getElementById('filterBranch');
+      const filterRoleElem = document.getElementById('filterRole');
+      const filterStatusElem = document.getElementById('filterStatus');
+      
+      if (filterBranchElem) filterBranchElem.value = '';
+      if (filterRoleElem) filterRoleElem.value = '';
+      if (filterStatusElem) filterStatusElem.value = '';
+      
+      displayUsers(allUsers);
+    }
+    
+    function displayUsers(users) {
+      const listDiv = document.getElementById('userList');
+      
+      if (!listDiv) return;
+      
+      if (users.length === 0) {
+        listDiv.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">👥</div>
+            <h3>No Users Found</h3>
+            <p>Click "Create New User" to add supervisors, operators, and treasurers</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let html = '';
+      users.forEach(user => {
+        const statusClass = user.status === 'ACTIVE' ? 'badge-active' : 'badge-inactive';
+        let roleClass = 'badge-operator';
+        if (user.role === 'SUPERVISOR') roleClass = 'badge-supervisor';
+        if (user.role === 'TREASURER') roleClass = 'badge-treasurer';
+        
+        const branchInfo = allBranches.find(b => b.branchCode === user.branchCode);
+        const branchName = branchInfo ? branchInfo.branchName : (user.branchCode || '—');
+        const branchDisplay = user.role === 'TREASURER' 
+          ? '<span style="color:#8e44ad;font-style:italic;">Cash Office</span>'
+          : (user.branchCode ? user.branchCode + ' - ' + branchName : 'Not assigned');
+        
+        html += `
+          <div class="user-card">
+            <div class="user-header">
+              <div class="user-info">
+                <div class="user-name">${user.name}</div>
+                <div class="user-id">${user.userId}</div>
+              </div>
+              <div class="user-badges">
+                <span class="badge ${roleClass}">${user.role}</span>
+                <span class="badge ${statusClass}">${user.status}</span>
+              </div>
+            </div>
+            
+            <div class="user-details-grid">
+              <div class="user-detail">
+                <label>Branch / Role</label>
+                <div class="value">${branchDisplay}</div>
+              </div>
+              <div class="user-detail">
+                <label>Contact</label>
+                <div class="value">${user.contact || 'Not provided'}</div>
+              </div>
+              <div class="user-detail">
+                <label>Email</label>
+                <div class="value">${user.email || 'Not provided'}</div>
+              </div>
+              <div class="user-detail">
+                <label>Created</label>
+                <div class="value">${user.createdDate}</div>
+              </div>
+            </div>
+            
+            <div class="user-actions">
+              <button class="btn btn-primary" onclick='openEditUserModal(${JSON.stringify(user)})'>✏️ Edit</button>
+              ${user.role !== 'TREASURER' ? `<button class="btn btn-warning" onclick='openTransferModal(${JSON.stringify(user)})'>🔄 Transfer</button>` : ''}
+              ${user.status === 'ACTIVE' ? 
+                `<button class="btn btn-danger" onclick="toggleUserStatus('${user.userId}', 'INACTIVE', '${user.name}')">⏸️ Deactivate</button>` :
+                `<button class="btn btn-success" onclick="toggleUserStatus('${user.userId}', 'ACTIVE', '${user.name}')">▶️ Activate</button>`
+              }
+              <button class="btn btn-warning" onclick="resetPassword('${user.userId}', '${user.name}')">🔑 Reset Password</button>
+              <button class="btn btn-danger" onclick="deleteUser('${user.userId}', '${user.name}')">🗑️ Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      listDiv.innerHTML = html;
+    }
+    
+    // ==========================================
+    // CREATE USER
+    // ==========================================
+    
+    function openCreateUserModal() {
+      document.getElementById('createUserModal').style.display = 'flex';
+      document.getElementById('createUserError').style.display = 'none';
+      
+      // Clear form
+      document.getElementById('createUserId').value = '';
+      document.getElementById('createUserName').value = '';
+      document.getElementById('createUserRole').value = '';
+      document.getElementById('createUserBranch').value = '';
+      document.getElementById('createUserContact').value = '';
+      document.getElementById('createUserEmail').value = '';
+      
+      // Reset field visibility
+      document.getElementById('branchFieldGroup').style.display = 'block';
+      document.getElementById('officeFieldGroup').style.display = 'none';
+      
+      // Populate branch dropdown
+      updateBranchFilters();
+    }
+    
+    function onRoleChange() {
+      const role = document.getElementById('createUserRole').value;
+      const branchGroup = document.getElementById('branchFieldGroup');
+      const officeGroup = document.getElementById('officeFieldGroup');
+      
+      if (role === 'TREASURER') {
+        branchGroup.style.display = 'none';
+        officeGroup.style.display = 'block';
+        // Load offices into dropdown
+        _loadOfficesIntoDropdown();
+      } else {
+        branchGroup.style.display = 'block';
+        officeGroup.style.display = 'none';
+      }
+    }
+    
+    function _loadOfficesIntoDropdown() {
+      const sel = document.getElementById('createUserOffice');
+      sel.innerHTML = '<option value="">Loading offices...</option>';
+      google.script.run
+        .withSuccessHandler(function(res) {
+          sel.innerHTML = '<option value="">-- Select Office (Optional) --</option>';
+          if (res && res.success && res.offices && res.offices.length > 0) {
+            res.offices.forEach(function(o) {
+              const opt = document.createElement('option');
+              opt.value = o.officeId;
+              opt.textContent = o.officeId + ' — ' + (o.officeName || '');
+              sel.appendChild(opt);
+            });
+          } else {
+            sel.innerHTML = '<option value="">-- No offices created yet --</option>';
+          }
+        })
+        .withFailureHandler(function() {
+          sel.innerHTML = '<option value="">-- Error loading offices --</option>';
+        })
+        .getAllCashOffices();
+    }
+    
+    function closeCreateUserModal() {
+      document.getElementById('createUserModal').style.display = 'none';
+    }
+    
+    function submitCreateUser() {
+      const errorDiv = document.getElementById('createUserError');
+      errorDiv.style.display = 'none';
+      
+      const role = document.getElementById('createUserRole').value;
+      const isTreasurer = (role === 'TREASURER');
+      
+      const userData = {
+        userId:     document.getElementById('createUserId').value.trim().toUpperCase(),
+        name:       document.getElementById('createUserName').value.trim(),
+        role:       role,
+        branchCode: isTreasurer ? '' : document.getElementById('createUserBranch').value,
+        officeId:   isTreasurer ? document.getElementById('createUserOffice').value : '',
+        contact:    document.getElementById('createUserContact').value.trim(),
+        email:      document.getElementById('createUserEmail').value.trim()
+      };
+      
+      // Validate
+      if (!userData.userId || !userData.name || !userData.role) {
+        errorDiv.textContent = '❌ Please fill in all required fields (ID, Name, Role)!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      // Branch required for non-treasurer
+      if (!isTreasurer && !userData.branchCode) {
+        errorDiv.textContent = '❌ Please select a branch!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (userData.contact && !/^\d{10}$/.test(userData.contact)) {
+        errorDiv.textContent = '❌ Contact number must be 10 digits!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      // Show loading
+      errorDiv.textContent = '⏳ Creating user...';
+      errorDiv.style.display = 'block';
+      errorDiv.style.background = '#d1ecf1';
+      errorDiv.style.color = '#0c5460';
+      errorDiv.style.borderLeftColor = '#17a2b8';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            // Show success modal with credentials
+            const createdUserIdElem = document.getElementById('createdUserId');
+            const createdPasswordElem = document.getElementById('createdPassword');
+            const createdRoleElem = document.getElementById('createdRole');
+            const createdBranchElem = document.getElementById('createdBranch');
+            
+            if (createdUserIdElem) createdUserIdElem.textContent = result.userId;
+            if (createdPasswordElem) createdPasswordElem.textContent = result.defaultPassword;
+            if (createdRoleElem) createdRoleElem.textContent = result.role;
+            if (createdBranchElem) {
+              if (result.role === 'TREASURER') {
+                createdBranchElem.textContent = result.officeId ? 'Cash Office: ' + result.officeId : 'No office assigned';
+              } else {
+                createdBranchElem.textContent = (result.branchCode || '') + (result.branchName ? ' - ' + result.branchName : '');
+              }
+            }
+            
+            closeCreateUserModal();
+            document.getElementById('successModal').style.display = 'flex';
+            
+            loadUsers();
+            loadUserStatistics();
+          } else {
+            errorDiv.textContent = '❌ ' + result.message;
+            errorDiv.style.display = 'block';
+            errorDiv.style.background = '#f8d7da';
+            errorDiv.style.color = '#721c24';
+            errorDiv.style.borderLeftColor = '#e74c3c';
+          }
+        })
+        .withFailureHandler(function(error) {
+          errorDiv.textContent = '❌ Error: ' + error.message;
+          errorDiv.style.display = 'block';
+          errorDiv.style.background = '#f8d7da';
+          errorDiv.style.color = '#721c24';
+          errorDiv.style.borderLeftColor = '#e74c3c';
+        })
+        .createUser(userData, currentAdminId);
+    }
+    
+    function closeSuccessModal() {
+      document.getElementById('successModal').style.display = 'none';
+    }
+    
+    function copyCredentials() {
+      const createdUserIdElem = document.getElementById('createdUserId');
+      const createdPasswordElem = document.getElementById('createdPassword');
+      const createdRoleElem = document.getElementById('createdRole');
+      const createdBranchElem = document.getElementById('createdBranch');
+      
+      const userId = createdUserIdElem ? createdUserIdElem.textContent : '';
+      const password = createdPasswordElem ? createdPasswordElem.textContent : '';
+      const role = createdRoleElem ? createdRoleElem.textContent : '';
+      const branch = createdBranchElem ? createdBranchElem.textContent : '';
+      
+      const text = `Login Credentials:\nUser ID: ${userId}\nPassword: ${password}\nRole: ${role}\nBranch: ${branch}`;
+      
+      navigator.clipboard.writeText(text).then(function() {
+        alert('✅ Credentials copied to clipboard!');
+      }, function() {
+        alert('❌ Failed to copy. Please copy manually.');
+      });
+    }
+    
+    // ==========================================
+    // EDIT USER
+    // ==========================================
+    
+    function openEditUserModal(user) {
+      document.getElementById('editUserId').value = user.userId;
+      document.getElementById('editUserIdDisplay').value = user.userId;
+      document.getElementById('editUserName').value = user.name;
+      document.getElementById('editUserContact').value = user.contact;
+      document.getElementById('editUserEmail').value = user.email;
+      
+      document.getElementById('editUserModal').style.display = 'flex';
+      document.getElementById('editUserError').style.display = 'none';
+    }
+    
+    function closeEditUserModal() {
+      document.getElementById('editUserModal').style.display = 'none';
+    }
+    
+    function submitEditUser() {
+      const errorDiv = document.getElementById('editUserError');
+      errorDiv.style.display = 'none';
+      
+      const userId = document.getElementById('editUserId').value;
+      const updateData = {
+        name: document.getElementById('editUserName').value.trim(),
+        contact: document.getElementById('editUserContact').value.trim(),
+        email: document.getElementById('editUserEmail').value.trim()
+      };
+      
+      if (!updateData.name) {
+        errorDiv.textContent = '❌ Name is required!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (updateData.contact && !/^\d{10}$/.test(updateData.contact)) {
+        errorDiv.textContent = '❌ Contact number must be 10 digits!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            alert('✅ ' + result.message);
+            closeEditUserModal();
+            loadUsers();
+          } else {
+            errorDiv.textContent = '❌ ' + result.message;
+            errorDiv.style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(error) {
+          errorDiv.textContent = '❌ Error: ' + error.message;
+          errorDiv.style.display = 'block';
+        })
+        .updateUserDetails(userId, updateData, currentAdminId);
+    }
+    
+    // ==========================================
+    // TRANSFER USER
+    // ==========================================
+    
+    function openTransferModal(user) {
+      document.getElementById('transferUserId').value = user.userId;
+      document.getElementById('transferUserDisplay').value = user.userId + ' - ' + user.name;
+      
+      const branchInfo = allBranches.find(b => b.branchCode === user.branchCode);
+      const branchName = branchInfo ? branchInfo.branchName : user.branchCode;
+      document.getElementById('transferCurrentBranch').value = user.branchCode + ' - ' + branchName;
+      
+      // Populate branch dropdown (exclude current branch)
+      const select = document.getElementById('transferNewBranch');
+      while (select.options.length > 1) {
+        select.remove(1);
+      }
+      
+      allBranches.forEach(branch => {
+        if (branch.status === 'ACTIVE' && branch.branchCode !== user.branchCode) {
+          const option = document.createElement('option');
+          option.value = branch.branchCode;
+          option.textContent = branch.branchCode + ' - ' + branch.branchName;
+          select.appendChild(option);
+        }
+      });
+      
+      document.getElementById('transferUserModal').style.display = 'flex';
+      document.getElementById('transferError').style.display = 'none';
+    }
+    
+    function closeTransferUserModal() {
+      document.getElementById('transferUserModal').style.display = 'none';
+    }
+    
+    function submitTransferUser() {
+      const errorDiv = document.getElementById('transferError');
+      errorDiv.style.display = 'none';
+      
+      const userId = document.getElementById('transferUserId').value;
+      const newBranchCode = document.getElementById('transferNewBranch').value;
+      
+      if (!newBranchCode) {
+        errorDiv.textContent = '❌ Please select a branch!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            alert('✅ ' + result.message + '\n\nUser: ' + result.userId + '\nNew Branch: ' + result.newBranch + ' - ' + result.branchName);
+            closeTransferUserModal();
+            loadUsers();
+          } else {
+            errorDiv.textContent = '❌ ' + result.message;
+            errorDiv.style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(error) {
+          errorDiv.textContent = '❌ Error: ' + error.message;
+          errorDiv.style.display = 'block';
+        })
+        .transferUserToBranch(userId, newBranchCode, currentAdminId);
+    }
+    
+    // ==========================================
+    // USER ACTIONS
+    // ==========================================
+    
+    function toggleUserStatus(userId, newStatus, userName) {
+      const action = newStatus === 'ACTIVE' ? 'activate' : 'deactivate';
+      
+      if (!confirm(`Are you sure you want to ${action} user "${userName}"?`)) {
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            alert('✅ ' + result.message);
+            loadUsers();
+            loadUserStatistics();
+          } else {
+            alert('❌ ' + result.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('❌ Error: ' + error.message);
+        })
+        .toggleUserStatus(userId, newStatus, currentAdminId);
+    }
+    
+    function resetPassword(userId, userName) {
+      if (!confirm(`Reset password for "${userName}"?\n\nThe password will be reset to: ${userId.toLowerCase()}123`)) {
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            alert('✅ Password Reset Successful!\n\nUser ID: ' + result.userId + '\nNew Password: ' + result.newPassword + '\n\nPlease share this password securely with the user.');
+          } else {
+            alert('❌ ' + result.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('❌ Error: ' + error.message);
+        })
+        .resetUserPassword(userId, currentAdminId);
+    }
+    
+    function deleteUser(userId, userName) {
+      if (!confirm(`⚠️ DELETE USER?\n\nUser: ${userName}\nID: ${userId}\n\nThis will permanently delete the user from the system.\n\nThis action CANNOT be undone!`)) {
+        return;
+      }
+      
+      // Double confirmation
+      if (!confirm('Are you ABSOLUTELY sure? Type YES in the next prompt to confirm.')) {
+        return;
+      }
+      
+      const confirmation = prompt('Type "DELETE" to confirm deletion:');
+      if (confirmation !== 'DELETE') {
+        alert('Deletion cancelled.');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            alert('✅ ' + result.message);
+            loadUsers();
+            loadUserStatistics();
+          } else {
+            alert('❌ ' + result.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('❌ Error: ' + error.message);
+        })
+        .deleteUser(userId, currentAdminId);
+    }
+    
+    // CHANGE PASSWORD
+    function openChangePasswordModal() {
+      document.getElementById('changePasswordModal').style.display = 'flex';
+      document.getElementById('passwordErrorMsg').style.display = 'none';
+      document.getElementById('passwordSuccessMsg').style.display = 'none';
+      document.getElementById('currentPassword').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+    }
+    
+    function closeChangePasswordModal() {
+      document.getElementById('changePasswordModal').style.display = 'none';
+    }
+    
+    function submitChangePassword() {
+      const errorDiv = document.getElementById('passwordErrorMsg');
+      const successDiv = document.getElementById('passwordSuccessMsg');
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+      
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        errorDiv.textContent = '❌ All fields are required!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (newPassword.length < 6) {
+        errorDiv.textContent = '❌ New password must be at least 6 characters!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (newPassword !== confirmPassword) {
+        errorDiv.textContent = '❌ New passwords do not match!';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            successDiv.textContent = '✅ ' + result.message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+              closeChangePasswordModal();
+            }, 2000);
+          } else {
+            errorDiv.textContent = '❌ ' + result.message;
+            errorDiv.style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(error) {
+          errorDiv.textContent = '❌ Error: ' + error.message;
+          errorDiv.style.display = 'block';
+        })
+        .changeAdminPassword(currentAdminId, currentPassword, newPassword);
+    }
+    
+    // ==========================================
+    // CASH OFFICE MANAGEMENT
+    // ==========================================
+    
+    let _mapOfficeId = '';
+    
+    function loadCashOffices() {
+      const listDiv = document.getElementById('officeList');
+      if (!listDiv) return;
+      listDiv.innerHTML = '<div class="loading" style="display:block;"><div class="spinner"></div><p>Loading cash offices...</p></div>';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (!result || !result.success || !result.offices || result.offices.length === 0) {
+            listDiv.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-state-icon">🏦</div>
+                <h3>No Cash Offices Yet</h3>
+                <p>Click "Create Cash Office" to add your first office</p>
+              </div>`;
+            return;
+          }
+          
+          let html = '';
+          result.offices.forEach(function(o) {
+            const hasTreasurer = o.treasurerId && o.treasurerId.trim() !== '';
+            html += `
+              <div class="office-card">
+                <div class="branch-header">
+                  <div>
+                    <h3 style="font-size:22px;color:#2c3e50;margin-bottom:5px;">${o.officeName}</h3>
+                    <span class="branch-code" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);">${o.officeId}</span>
+                  </div>
+                  <span class="status-badge status-active">ACTIVE</span>
+                </div>
+                <div class="branch-details">
+                  <div class="detail-item">
+                    <label>Contact</label>
+                    <div class="value">${o.contact || 'Not provided'}</div>
+                  </div>
+                  <div class="detail-item">
+                    <label>Address</label>
+                    <div class="value">${o.address || 'Not provided'}</div>
+                  </div>
+                  <div class="detail-item" style="border-left-color:${hasTreasurer ? '#8e44ad' : '#e74c3c'};">
+                    <label>Treasurer</label>
+                    <div class="value" style="color:${hasTreasurer ? '#8e44ad' : '#e74c3c'};font-weight:bold;">
+                      ${hasTreasurer ? '👤 ' + o.treasurerId : '⚠️ Not assigned'}
+                    </div>
+                  </div>
+                  <div class="detail-item">
+                    <label>Mapped Branches</label>
+                    <div class="value" id="branchCount_${o.officeId}">Loading...</div>
+                  </div>
+                </div>
+                <div style="background:#f8f9fa;border-radius:8px;padding:12px;margin:15px 0;border-left:3px solid ${hasTreasurer ? '#8e44ad' : '#f39c12'};">
+                  <div style="font-size:12px;font-weight:bold;color:#7f8c8d;margin-bottom:8px;text-transform:uppercase;">
+                    ${hasTreasurer ? '✅ Treasurer Assigned' : '⚠️ Assign Treasurer'}
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <select id="treasurerSelect_${o.officeId}" style="flex:1;padding:8px;border:2px solid #dfe6e9;border-radius:6px;font-size:14px;min-width:150px;">
+                      <option value="">-- Select Treasurer --</option>
+                    </select>
+                    <button onclick="assignTreasurer('${o.officeId}')"
+                      style="padding:9px 16px;background:linear-gradient(135deg,#8e44ad,#9b59b6);color:white;border:none;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;white-space:nowrap;">
+                      ${hasTreasurer ? '🔄 Change' : '✅ Assign'}
+                    </button>
+                  </div>
+                </div>
+                <div class="branch-actions">
+                  <button class="btn btn-primary" onclick="openMapBranchToOfficeModal('${o.officeId}')">🔗 Map Branch</button>
+                  <button class="btn btn-danger" onclick="openRemoveBranchFromOfficeModal('${o.officeId}')">🔴 Remove Branch</button>
+                  <button class="btn btn-warning" onclick="viewOfficeBranches('${o.officeId}')">👁 View Branches</button>
+                  <button class="btn btn-success" onclick="openEditOfficeModal('${o.officeId}', '${o.officeName}', '${o.address || ''}', '${o.contact || ''}', '${o.email || ''}')">✏️ Edit</button>
+                  <button class="btn" style="background:linear-gradient(135deg,#e67e22,#d35400);color:white;" onclick="toggleOfficeStatus('${o.officeId}', '${o.status || 'ACTIVE'}')">
+                    ${(o.status || 'ACTIVE') === 'ACTIVE' ? '🔴 Deactivate' : '🟢 Activate'}
+                  </button>
+                  <button class="btn btn-danger" onclick="deleteOfficeConfirm('${o.officeId}')">🗑️ Delete</button>
+                </div>
+              </div>`;
+          });
+          listDiv.innerHTML = html;
+          
+          // Load branch counts + populate treasurer dropdowns
+          result.offices.forEach(function(o) {
+            loadOfficeBranchCount(o.officeId);
+            populateTreasurerDropdown(o.officeId, o.treasurerId);
+          });
+        })
+        .withFailureHandler(function(error) {
+          listDiv.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><h3>Error</h3><p>${error.message}</p></div>`;
+        })
+        .getAllCashOffices();
+    }
+    
+    function populateTreasurerDropdown(officeId, currentTreasurerId) {
+      // Filter allUsers to get TREASURER role only
+      const sel = document.getElementById('treasurerSelect_' + officeId);
+      if (!sel) return;
+      sel.innerHTML = '<option value="">-- Select Treasurer --</option>';
+      
+      // If allUsers already loaded, use it; else fetch
+      const treasurers = allUsers.filter(function(u) {
+        return u.role === 'TREASURER' && u.status === 'ACTIVE';
+      });
+      
+      if (treasurers.length > 0) {
+        treasurers.forEach(function(t) {
+          const opt = document.createElement('option');
+          opt.value = t.userId;
+          opt.textContent = t.userId + ' — ' + t.name;
+          if (currentTreasurerId && t.userId === currentTreasurerId) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      } else {
+        // Fetch from backend if not loaded
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res || !res.users) return;
+            const trs = res.users.filter(function(u) { return u.role === 'TREASURER' && u.status === 'ACTIVE'; });
+            sel.innerHTML = '<option value="">-- Select Treasurer --</option>';
+            trs.forEach(function(t) {
+              const opt = document.createElement('option');
+              opt.value = t.userId;
+              opt.textContent = t.userId + ' — ' + t.name;
+              if (currentTreasurerId && t.userId === currentTreasurerId) opt.selected = true;
+              sel.appendChild(opt);
+            });
+            if (trs.length === 0) {
+              sel.innerHTML = '<option value="">-- No Treasurer users yet --</option>';
+            }
+          })
+          .withFailureHandler(function() {})
+          .getAllUsers(currentAdminId);
+      }
+    }
+    
+    function assignTreasurer(officeId) {
+      const sel = document.getElementById('treasurerSelect_' + officeId);
+      if (!sel) return;
+      const treasurerId = sel.value;
+      if (!treasurerId) { alert('⚠️ Pehle ek Treasurer select karo!'); return; }
+      
+      if (!confirm('Treasurer ' + treasurerId + ' ko office ' + officeId + ' assign karein?\n\nNote: Isse is office ke saare mapped branches ka Treasurer bhi update ho jayega.')) return;
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            alert('✅ ' + res.message);
+            loadCashOffices();
+          } else {
+            alert('❌ ' + (res ? res.message : 'Error'));
+          }
+        })
+        .withFailureHandler(function(e) {
+          alert('❌ Error: ' + e.message);
+        })
+        .assignTreasurerToOffice(officeId, treasurerId, currentAdminId);
+    }
+    
+    function loadOfficeBranchCount(officeId) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          const el = document.getElementById('branchCount_' + officeId);
+          if (el) el.textContent = (res && res.success) ? (res.branches ? res.branches.length : 0) + ' branches' : '—';
+        })
+        .withFailureHandler(function() {
+          const el = document.getElementById('branchCount_' + officeId);
+          if (el) el.textContent = '—';
+        })
+        .getCashOfficeBranches(officeId);
+    }
+    
+    function openCreateOfficeModal() {
+      document.getElementById('createOfficeModal').style.display = 'flex';
+      document.getElementById('createOfficeError').style.display = 'none';
+      document.getElementById('newOfficeId').value = '';
+      document.getElementById('newOfficeName').value = '';
+      document.getElementById('newOfficeAddress').value = '';
+      document.getElementById('newOfficeContact').value = '';
+    }
+    
+    function closeCreateOfficeModal() {
+      document.getElementById('createOfficeModal').style.display = 'none';
+    }
+    
+    function submitCreateOffice() {
+      const errDiv = document.getElementById('createOfficeError');
+      errDiv.style.display = 'none';
+      
+      const id      = document.getElementById('newOfficeId').value.trim().toUpperCase();
+      const name    = document.getElementById('newOfficeName').value.trim();
+      const address = document.getElementById('newOfficeAddress').value.trim();
+      const contact = document.getElementById('newOfficeContact').value.trim();
+      
+      if (!id || !name) {
+        errDiv.textContent = '❌ Office ID and Name are required!';
+        errDiv.style.display = 'block';
+        return;
+      }
+      if (contact && !/^\d{10}$/.test(contact)) {
+        errDiv.textContent = '❌ Contact must be 10 digits!';
+        errDiv.style.display = 'block';
+        return;
+      }
+      
+      errDiv.textContent = '⏳ Creating office...';
+      errDiv.style.display = 'block';
+      errDiv.style.background = '#d1ecf1';
+      errDiv.style.color = '#0c5460';
+      errDiv.style.borderLeftColor = '#17a2b8';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            closeCreateOfficeModal();
+            alert('✅ Cash Office created: ' + id);
+            loadCashOffices();
+          } else {
+            errDiv.textContent = '❌ ' + (result ? result.message : 'Unknown error');
+            errDiv.style.display = 'block';
+            errDiv.style.background = '#f8d7da';
+            errDiv.style.color = '#721c24';
+            errDiv.style.borderLeftColor = '#e74c3c';
+          }
+        })
+        .withFailureHandler(function(error) {
+          errDiv.textContent = '❌ Error: ' + error.message;
+          errDiv.style.display = 'block';
+          errDiv.style.background = '#f8d7da';
+          errDiv.style.color = '#721c24';
+          errDiv.style.borderLeftColor = '#e74c3c';
+        })
+        .createCashOffice(id, name, address, contact, currentAdminId);
+    }
+    
+    function openMapBranchToOfficeModal(officeId) {
+      _mapOfficeId = officeId;
+      document.getElementById('mapBranchOfficeTitle').textContent = 'Mapping branch to: ' + officeId;
+      document.getElementById('mapBranchOfficeError').style.display = 'none';
+      
+      // Populate branches
+      const sel = document.getElementById('mapBranchForOfficeSelect');
+      sel.innerHTML = '<option value="">-- Select Branch --</option>';
+      allBranches.forEach(function(b) {
+        if (b.status === 'ACTIVE') {
+          const opt = document.createElement('option');
+          opt.value = b.branchCode;
+          opt.textContent = b.branchCode + ' — ' + b.branchName;
+          sel.appendChild(opt);
+        }
+      });
+      
+      document.getElementById('mapBranchToOfficeModal').style.display = 'flex';
+    }
+    
+    function closeMapBranchToOfficeModal() {
+      document.getElementById('mapBranchToOfficeModal').style.display = 'none';
+      _mapOfficeId = '';
+    }
+    
+    function submitMapBranchToOffice() {
+      const errDiv     = document.getElementById('mapBranchOfficeError');
+      const branchCode = document.getElementById('mapBranchForOfficeSelect').value;
+      errDiv.style.display = 'none';
+      
+      if (!branchCode) {
+        errDiv.textContent = '❌ Please select a branch!';
+        errDiv.style.display = 'block';
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            closeMapBranchToOfficeModal();
+            alert('✅ Branch ' + branchCode + ' mapped to office ' + _mapOfficeId);
+            loadCashOffices();
+          } else {
+            errDiv.textContent = '❌ ' + (result ? result.message : 'Error');
+            errDiv.style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(error) {
+          errDiv.textContent = '❌ Error: ' + error.message;
+          errDiv.style.display = 'block';
+        })
+        .mapBranchToCashOffice(_mapOfficeId, branchCode, currentAdminId);
+    }
+    
+    function viewOfficeBranches(officeId) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.success) {
+            alert('❌ ' + (res ? res.message : 'Error loading branches'));
+            return;
+          }
+          const branches = res.branches || [];
+          if (branches.length === 0) {
+            alert('ℹ️ Office ' + officeId + ' mein koi branch map nahi hai abhi.\n\n"Map Branch" button se branch add karo.');
+          } else {
+            const list = branches.map(function(b) {
+              const trs = b.treasurerId ? ' [Treasurer: ' + b.treasurerId + ']' : ' [No Treasurer]';
+              return '• ' + b.branchCode + (b.branchName ? ' — ' + b.branchName : '') + trs;
+            }).join('\n');
+            alert('🏦 Branches mapped to office ' + officeId + ':\n\n' + list);
+          }
+        })
+        .withFailureHandler(function(e) {
+          alert('❌ Error: ' + e.message);
+        })
+        .getCashOfficeBranches(officeId);
+    }
+    
+    // LOGOUT
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        currentAdminId = '';
+        currentAdminName = '';
+        document.getElementById('dashboardPage').style.display = 'none';
+        document.getElementById('loginPage').style.display = 'flex';
+        document.getElementById('adminId').value = '';
+        document.getElementById('password').value = '';
+      }
+    }
+    // ── Edit Cash Office Modal ─────────────────────────────────
+    function openEditOfficeModal(officeId, name, address, contact, email) {
+      const old = document.getElementById('editOfficeModal');
+      if (old) old.remove();
+
+      const modal = document.createElement('div');
+      modal.id = 'editOfficeModal';
+      modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      modal.innerHTML = `
+        <div style="background:white;border-radius:16px;padding:30px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+          <h3 style="color:#2c3e50;margin:0 0 20px 0;">✏️ Edit Cash Office — ${officeId}</h3>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="font-size:13px;font-weight:bold;color:#7f8c8d;">Office Name</label>
+              <input id="editOfficeName" value="${name}" style="width:100%;padding:10px;border:2px solid #dfe6e9;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:bold;color:#7f8c8d;">Address</label>
+              <input id="editOfficeAddress" value="${address}" style="width:100%;padding:10px;border:2px solid #dfe6e9;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:bold;color:#7f8c8d;">Contact</label>
+              <input id="editOfficeContact" value="${contact}" style="width:100%;padding:10px;border:2px solid #dfe6e9;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:bold;color:#7f8c8d;">Email</label>
+              <input id="editOfficeEmail" value="${email}" style="width:100%;padding:10px;border:2px solid #dfe6e9;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:24px;">
+            <button onclick="submitEditOffice('${officeId}')"
+              style="flex:1;padding:12px;background:linear-gradient(135deg,#2ecc71,#27ae60);color:white;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;">
+              ✅ Save Changes
+            </button>
+            <button onclick="document.getElementById('editOfficeModal').remove()"
+              style="flex:1;padding:12px;background:#ecf0f1;color:#2c3e50;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;">
+              Cancel
+            </button>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+    }
+
+    function submitEditOffice(officeId) {
+      const updatedData = {
+        officeName: document.getElementById('editOfficeName').value.trim(),
+        address:    document.getElementById('editOfficeAddress').value.trim(),
+        contact:    document.getElementById('editOfficeContact').value.trim(),
+        email:      document.getElementById('editOfficeEmail').value.trim()
+      };
+      if (!updatedData.officeName) { alert('Office name required'); return; }
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.success) {
+            alert('✅ ' + res.message);
+            document.getElementById('editOfficeModal').remove();
+            loadCashOffices();
+          } else {
+            alert('❌ ' + res.message);
+          }
+        })
+        .withFailureHandler(function(err) { alert('❌ Error: ' + err.message); })
+        .editCashOffice(officeId, updatedData, currentAdminId);
+    }
+
+    // ── Toggle Active / Inactive ───────────────────────────────
+    function toggleOfficeStatus(officeId, currentStatus) {
+      const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      if (!confirm('Cash Office ' + officeId + ' ko ' + newStatus + ' karna chahte ho?')) return;
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.success) {
+            alert('✅ ' + res.message);
+            loadCashOffices();
+          } else {
+            alert('❌ ' + res.message);
+          }
+        })
+        .withFailureHandler(function(err) { alert('❌ Error: ' + err.message); })
+        .updateCashOfficeStatus(officeId, newStatus, currentAdminId);
+    }
+
+    // ── Delete Cash Office ─────────────────────────────────────
+    function deleteOfficeConfirm(officeId) {
+      if (!confirm('⚠️ Cash Office ' + officeId + ' permanently delete karna chahte ho?\n\nYeh action undo nahi ho sakta.')) return;
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.success) {
+            alert('✅ ' + res.message);
+            loadCashOffices();
+          } else {
+            alert('❌ ' + res.message);
+          }
+        })
+        .withFailureHandler(function(err) { alert('❌ Error: ' + err.message); })
+        .deleteCashOffice(officeId, currentAdminId);
+    }
+
+    // ── Remove Branch from Cash Office ────────────────────────
+    let _removeOfficeId = '';
+
+    function openRemoveBranchFromOfficeModal(officeId) {
+      _removeOfficeId = officeId;
+      document.getElementById('removeBranchOfficeTitle').textContent =
+        'Office: ' + officeId + ' — Active mapped branches';
+      document.getElementById('removeBranchOfficeError').style.display = 'none';
+      document.getElementById('removeBranchOfficeSuccess').style.display = 'none';
+      document.getElementById('removeBranchFromOfficeModal').style.display = 'flex';
+
+      // Load branches for this office
+      loadMappedBranchesForRemoval(officeId);
+    }
+
+    function closeRemoveBranchFromOfficeModal() {
+      document.getElementById('removeBranchFromOfficeModal').style.display = 'none';
+      _removeOfficeId = '';
+    }
+
+    function loadMappedBranchesForRemoval(officeId) {
+      const listDiv = document.getElementById('removeBranchList');
+      listDiv.innerHTML = '<div class="loading" style="display:block;"><div class="spinner"></div><p>Loading...</p></div>';
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.success) {
+            listDiv.innerHTML = '<p style="color:#e74c3c;text-align:center;">❌ ' + (res ? res.message : 'Error') + '</p>';
+            return;
+          }
+
+          // Filter only ACTIVE branches
+          const activeBranches = (res.branches || []).filter(function(b) {
+            return b.status === 'ACTIVE';
+          });
+
+          if (activeBranches.length === 0) {
+            listDiv.innerHTML =
+              '<div class="empty-state" style="padding:30px;">' +
+              '<div class="empty-state-icon">🏢</div>' +
+              '<h3>No Active Branches</h3>' +
+              '<p>Is office mein koi active mapped branch nahi hai.</p>' +
+              '</div>';
+            return;
+          }
+
+          // Use DOM approach — no quote escaping issues
+          var container = document.createElement('div');
+          container.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+
+          activeBranches.forEach(function(b) {
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;' +
+              'background:#f8f9fa;padding:14px 16px;border-radius:10px;border-left:4px solid #3498db;';
+
+            var info = document.createElement('div');
+            var codeDiv = document.createElement('div');
+            codeDiv.style.cssText = 'font-weight:bold;color:#2c3e50;font-size:15px;';
+            codeDiv.textContent = b.branchCode;
+
+            var nameDiv = document.createElement('div');
+            nameDiv.style.cssText = 'font-size:12px;color:#7f8c8d;';
+            nameDiv.textContent = (b.branchName || '') + (b.mappedDate ? ' · Mapped: ' + b.mappedDate : '');
+
+            info.appendChild(codeDiv);
+            info.appendChild(nameDiv);
+
+            var btn = document.createElement('button');
+            btn.textContent = '🔴 Remove';
+            btn.style.cssText = 'background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;' +
+              'border:none;padding:9px 16px;border-radius:8px;font-size:13px;' +
+              'font-weight:bold;cursor:pointer;white-space:nowrap;';
+            btn.setAttribute('data-branch', b.branchCode);
+            btn.addEventListener('click', function() {
+              confirmRemoveBranch(this.getAttribute('data-branch'));
+            });
+
+            row.appendChild(info);
+            row.appendChild(btn);
+            container.appendChild(row);
+          });
+
+          listDiv.innerHTML = '';
+          listDiv.appendChild(container);
+        })
+        .withFailureHandler(function(err) {
+          listDiv.innerHTML = '<p style="color:#e74c3c;text-align:center;">❌ Error: ' + err.message + '</p>';
+        })
+        .getCashOfficeBranchesAll(officeId, currentAdminId);
+    }
+
+    function confirmRemoveBranch(branchCode) {
+      if (!confirm('⚠️ Branch ' + branchCode + ' ko office ' + _removeOfficeId + ' se remove karna chahte ho?\n\nIs branch ke pending cash transactions affect ho sakte hain.')) {
+        return;
+      }
+
+      const errDiv = document.getElementById('removeBranchOfficeError');
+      const sucDiv = document.getElementById('removeBranchOfficeSuccess');
+      errDiv.style.display = 'none';
+      sucDiv.style.display = 'none';
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            sucDiv.textContent = '✅ ' + res.message;
+            sucDiv.style.display = 'block';
+            // Reload the branch list
+            setTimeout(function() {
+              loadMappedBranchesForRemoval(_removeOfficeId);
+              loadCashOffices();
+            }, 800);
+          } else {
+            errDiv.textContent = '❌ ' + (res ? res.message : 'Error');
+            errDiv.style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(err) {
+          errDiv.textContent = '❌ Error: ' + err.message;
+          errDiv.style.display = 'block';
+        })
+        .unmapBranchFromCashOffice(_removeOfficeId, branchCode, currentAdminId);
+    }
+  </script>
+</body>
+</html>

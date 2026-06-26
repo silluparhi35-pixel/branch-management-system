@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OPERATOR - Member Entry</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .badge {
+      display: inline-block;
+      background: #ff9800;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 25px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    
+    .content { padding: 35px; }
+    
+    .alert {
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      border-left: 5px solid;
+      font-size: 14px;
+    }
+    
+    .alert-warning {
+      background: #fff3cd;
+      border-color: #ff9800;
+      color: #856404;
+    }
+    
+    .form-group { margin-bottom: 25px; }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #333;
+      font-size: 15px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+    
+    .form-group input:focus {
+      border-color: #667eea;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+    
+    .form-group input[readonly] {
+      background: #f8f9fa;
+      color: #6c757d;
+    }
+    
+    .required::after {
+      content: ' *';
+      color: #dc3545;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 10px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+    
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .success {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .info-box {
+      background: #e7f3ff;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    
+    .info-box strong {
+      color: #1976D2;
+      display: block;
+      margin-bottom: 8px;
+    }
+    
+    .info-box ol {
+      margin-left: 20px;
+      color: #555;
+    }
+    @keyframes shake {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  25% { transform: translateX(-50%) translateY(-5px); }
+  75% { transform: translateX(-50%) translateY(5px); }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 id="headerTitle">📝 Member Entry</h1>
+      <div class="badge">🔒 OPERATOR MODE - PENDING APPROVAL</div>
+    </div>
+
+    <div class="content">
+      <div class="alert alert-warning">
+        <strong>⚠️ IMPORTANT:</strong> This entry will be submitted to supervisor for approval before being saved to the database.
+      </div>
+
+      <form id="memberForm">
+        <div class="form-group">
+          <label>📋 Member ID (Auto-Generated)</label>
+          <input type="text" id="nextMemberId" readonly>
+        </div>
+
+        <div class="form-group">
+          <label class="required">👤 Full Name</label>
+          <input type="text" id="name" placeholder="Enter member's full name" required>
+        </div>
+
+        <div class="form-group">
+          <label class="required">📞 Contact Number</label>
+          <input type="tel" id="contact" placeholder="Enter 10-digit mobile number" maxlength="10" required>
+        </div>
+
+        <div class="form-group">
+          <label class="required">🆔 User ID</label>
+          <input type="text" id="userId" placeholder="Create unique User ID (e.g., USER001)" required>
+        </div>
+
+        <div class="form-group">
+          <label class="required">📧 Email Address</label>
+          <input type="email" id="email" placeholder="Enter valid email address" required>
+        </div>
+
+        <div id="errorMsg" class="message error"></div>
+        <div id="successMsg" class="message success"></div>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          📤 Submit for Supervisor Approval
+        </button>
+      </form>
+
+      <div class="info-box">
+        <strong>ℹ️ What Happens Next?</strong>
+        <ol>
+          <li>Entry goes to "Pending Approvals" queue</li>
+          <li>Supervisor reviews and approves/rejects</li>
+          <li>You get notification of decision</li>
+          <li>If approved: Member saved to database</li>
+          <li>If rejected: Check "Rejected Entries" to modify</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ✅ FIXED INIT: Single clean load event — no race conditions, no dead code
+    let operatorId    = null;
+    let operatorToken = null;
+    let userBranchCode = '';
+
+    window.addEventListener('load', function() {
+      // Step 1: Get operatorId — URL param first, then window inject fallback
+      operatorId    = new URLSearchParams(window.location.search).get('operator') || (window.OPERATOR_ID || null);
+      operatorToken = (new URLSearchParams(window.location.search).get('token'))
+                      ? decodeURIComponent(new URLSearchParams(window.location.search).get('token'))
+                      : (window.OPERATOR_TOKEN || null);
+
+      if (!operatorId) {
+        alert('❌ Operator ID not found!\n\nPlease close this window and login again.');
+        window.close();
+        return;
+      }
+
+      // Step 2: Show operator ID in header
+      const header = document.getElementById('headerTitle');
+      if (header) {
+        header.innerHTML += '<br><small style="font-size:14px;opacity:0.9;">Operator: ' + operatorId + '</small>';
+      }
+
+      // Step 3: Fetch branch code + show branch banner
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            userBranchCode = result.branchCode || '';
+            const bannerDiv = document.createElement('div');
+            bannerDiv.style.cssText = 'background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:8px 20px;text-align:center;font-size:13px;';
+            bannerDiv.innerHTML = '<strong>Operator:</strong> ' + operatorId + ' &nbsp;|&nbsp; <strong>Branch:</strong> ' + userBranchCode;
+            const container = document.querySelector('.container') || document.body;
+            container.insertBefore(bannerDiv, container.firstChild);
+          }
+        })
+        .getOperatorDetails(operatorId);
+
+      // Step 4: Load form data
+      initFormData();
+    });
+
+    function initFormData() {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.success) { document.getElementById('nextMemberId').value = res.nextId; }
+          else { showError('Failed to generate Member ID: ' + res.message); }
+        })
+        .withFailureHandler(function(err) { showError('Error loading Member ID: ' + err.message); })
+        .getNextMemberId();
+    }
+
+    // Form submission
+    document.getElementById('memberForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      submitMemberEntry();
+    });
+
+    function submitMemberEntry() {
+      const btn = document.getElementById('submitBtn');
+      const errorDiv = document.getElementById('errorMsg');
+      const successDiv = document.getElementById('successMsg');
+
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+
+      // ✅ CRITICAL: Verify operator ID before submission
+      if (!operatorId || operatorId === 'null' || operatorId === 'undefined') {
+        showError('❌ SUBMISSION BLOCKED: Operator ID is missing!\n\n' +
+                  'This is a critical error. Please:\n' +
+                  '1. Close this form\n' +
+                  '2. Return to operator dashboard\n' +
+                  '3. Login again\n' +
+                  '4. Reopen the form');
+        return;
+      }
+
+      const memberData = {
+        memberId: document.getElementById('nextMemberId').value.trim(), // ✅ FIXED: include memberId
+        name: document.getElementById('name').value.trim(),
+        contact: document.getElementById('contact').value.trim(),
+        userId: document.getElementById('userId').value.trim().toUpperCase(),
+        email: document.getElementById('email').value.trim(),
+        branchCode: userBranchCode
+      };
+
+      // Validation
+      if (!memberData.name || !memberData.contact || !memberData.userId || !memberData.email) {
+        showError('❌ Please fill all required fields');
+        return;
+      }
+
+      if (!/^\d{10}$/.test(memberData.contact)) {
+        showError('❌ Contact must be exactly 10 digits');
+        return;
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(memberData.email)) {
+        showError('❌ Invalid email format');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Submitting to Supervisor...';
+
+      console.log('📤 Submitting with Operator ID:', operatorId);
+      console.log('📋 Member Data:', memberData);
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.textContent = '📤 Submit for Supervisor Approval';
+
+          if (res.success) {
+            showSuccess(`
+              <strong>✅ ${res.message}</strong><br><br>
+              <strong>Entry ID:</strong> ${res.entryId}<br>
+              <strong>Submitted by:</strong> ${operatorId}<br><br>
+              <strong>Next Steps:</strong><br>
+              • Entry is now pending supervisor approval<br>
+              • You'll receive notification once reviewed
+            `);
+
+            document.getElementById('memberForm').reset();
+
+            google.script.run
+              .withSuccessHandler(function(res) {
+                if (res.success) {
+                  document.getElementById('nextMemberId').value = res.nextId;
+                }
+              })
+              .getNextMemberId();
+
+          } else {
+            showError('❌ ' + res.message);
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.textContent = '📤 Submit for Supervisor Approval';
+          showError('❌ System Error: ' + err.message + '\n\nOperator ID: ' + operatorId);
+        })
+        // ✅ FIXED: operatorId PEHLE, memberData BAAD MEIN
+        .operatorSubmitMemberEntry(operatorId, memberData, operatorToken);
+    }
+
+    function showError(msg) {
+      const errorDiv = document.getElementById('errorMsg');
+      errorDiv.innerHTML = msg;
+      errorDiv.style.display = 'block';
+      document.getElementById('successMsg').style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+      const successDiv = document.getElementById('successMsg');
+      successDiv.innerHTML = msg;
+      successDiv.style.display = 'block';
+      document.getElementById('errorMsg').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OPERATOR - Deposit Entry</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .header {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 { font-size: 28px; margin-bottom: 10px; }
+    .badge {
+      background: #ff9800;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 25px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 10px;
+      display: inline-block;
+    }
+    .content { padding: 35px; }
+    .alert {
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      border-left: 5px solid #ff9800;
+      background: #fff3cd;
+      color: #856404;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+    .form-group { margin-bottom: 25px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: #f093fb;
+      outline: none;
+    }
+    .form-group input[readonly] { background: #f8f9fa; color: #6c757d; }
+    .required::after { content: ' *'; color: #dc3545; }
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      margin-top: 10px;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+    .message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .error { background: #f8d7da; color: #721c24; }
+    .success { background: #d4edda; color: #155724; }
+    .balance-display {
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border-left: 4px solid #2196F3;
+    }
+    .balance-display strong { color: #1976D2; font-size: 18px; }
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+    @keyframes shake {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  25% { transform: translateX(-50%) translateY(-5px); }
+  75% { transform: translateX(-50%) translateY(5px); }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 id="headerTitle">💰 Deposit Entry</h1>
+      <div class="badge">🔒 OPERATOR MODE - PENDING APPROVAL</div>
+    </div>
+
+    <div class="content">
+      <div class="alert">
+        <strong>⚠️ IMPORTANT:</strong> This deposit will be submitted for supervisor approval before being recorded.
+      </div>
+
+      <form id="depositForm">
+        <div class="form-group">
+          <label class="required">🏦 Account Number</label>
+          <select id="accountNo" required>
+            <option value="">-- Select Account --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>👤 Member Name</label>
+          <input type="text" id="memberName" readonly>
+        </div>
+
+        <div id="balanceDisplay" class="balance-display" style="display:none;">
+          <strong>💳 Current Balance: ₹<span id="currentBalance">0</span></strong>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="required">💵 Deposit Amount</label>
+            <input type="number" id="amount" placeholder="Enter amount" step="0.01" required>
+          </div>
+          
+          <div class="form-group">
+            <label>📈 Interest</label>
+            <input type="number" id="interest" placeholder="Interest amount" step="0.01" value="0">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="required">📅 Deposit Date</label>
+            <input type="date" id="depositDate" required readonly style="background:#f8f9fa;color:#6c757d;cursor:not-allowed;">
+          </div>
+          
+          <div class="form-group">
+            <label class="required">📆 Month For</label>
+            <input type="month" id="monthFor" required readonly style="background:#f8f9fa;color:#6c757d;cursor:not-allowed;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>📧 Email</label>
+          <input type="email" id="email" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>🆔 User ID</label>
+          <input type="text" id="userId" readonly>
+        </div>
+
+        <div id="errorMsg" class="message error"></div>
+        <div id="successMsg" class="message success"></div>
+
+        <button type="submit" class="btn" id="submitBtn">
+          📤 Submit for Supervisor Approval
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ✅ FIXED INIT: Single clean load event — no race conditions, no dead code
+    let operatorId    = null;
+    let operatorToken = null;
+    let userBranchCode = '';
+
+    window.addEventListener('load', function() {
+      // Step 1: Get operatorId — URL param first, then window inject fallback
+      operatorId    = new URLSearchParams(window.location.search).get('operator') || (window.OPERATOR_ID || null);
+      operatorToken = (new URLSearchParams(window.location.search).get('token'))
+                      ? decodeURIComponent(new URLSearchParams(window.location.search).get('token'))
+                      : (window.OPERATOR_TOKEN || null);
+
+      if (!operatorId) {
+        alert('❌ Operator ID not found!\n\nPlease close this window and login again.');
+        window.close();
+        return;
+      }
+
+      // Step 2: Show operator ID in header
+      const header = document.getElementById('headerTitle');
+      if (header) {
+        header.innerHTML += '<br><small style="font-size:14px;opacity:0.9;">Operator: ' + operatorId + '</small>';
+      }
+
+      // Step 3: Fetch branch code + show branch banner
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            userBranchCode = result.branchCode || '';
+            const bannerDiv = document.createElement('div');
+            bannerDiv.style.cssText = 'background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:8px 20px;text-align:center;font-size:13px;';
+            bannerDiv.innerHTML = '<strong>Operator:</strong> ' + operatorId + ' &nbsp;|&nbsp; <strong>Branch:</strong> ' + userBranchCode;
+            const container = document.querySelector('.container') || document.body;
+            container.insertBefore(bannerDiv, container.firstChild);
+          }
+        })
+        .getOperatorDetails(operatorId);
+
+      // Step 4: Load form data
+      initFormData();
+    });
+
+    function initFormData() {
+      loadAccounts();
+    }
+
+    document.getElementById('depositDate').valueAsDate = new Date();
+      document.getElementById('depositDate').readOnly = true; // ✅ No backdate
+    const today = new Date();
+    document.getElementById('monthFor').value = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+      document.getElementById('monthFor').readOnly = true; // ✅ No backdate
+
+
+
+    function loadAccounts() {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.success) {
+            const select = document.getElementById('accountNo');
+            res.accounts.forEach(acc => {
+              const option = document.createElement('option');
+              option.value = acc.accountNo;
+              option.textContent = acc.accountNo + ' - ' + acc.name;
+              option.dataset.name = acc.name;
+              option.dataset.email = acc.email;
+              option.dataset.userId = acc.userId;
+              select.appendChild(option);
+            });
+          }
+        })
+        .getActiveAccountsForDeposit(operatorId);
+    }
+
+    document.getElementById('accountNo').addEventListener('change', function() {
+      const selected = this.options[this.selectedIndex];
+      if (selected.value) {
+        document.getElementById('memberName').value = selected.dataset.name || '';
+        document.getElementById('email').value = selected.dataset.email || '';
+        document.getElementById('userId').value = selected.dataset.userId || '';
+        loadBalance(selected.value);
+      }
+    });
+
+    function loadBalance(accountNo) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.success) {
+            document.getElementById('currentBalance').textContent = res.balance.toFixed(2);
+            document.getElementById('balanceDisplay').style.display = 'block';
+          }
+        })
+        .getCurrentBalance(accountNo);
+    }
+
+    document.getElementById('depositForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      submitDeposit();
+    });
+
+    function submitDeposit() {
+  const form = document.getElementById('depositForm');
+  
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  // ✅ FIXED: Correct field IDs matching the HTML
+  const depositData = {
+    accountNo:  document.getElementById('accountNo').value.trim(),
+    name:       document.getElementById('memberName').value.trim(),
+    amount:     parseFloat(document.getElementById('amount').value) || 0,
+    interest:   parseFloat(document.getElementById('interest').value) || 0,
+    date:       document.getElementById('depositDate').value,
+    monthFor:   document.getElementById('monthFor').value,
+    email:      document.getElementById('email').value.trim(),
+    userId:     document.getElementById('userId').value.trim(),
+    branchCode: userBranchCode
+  };
+
+  if (!depositData.accountNo || !depositData.amount || !depositData.date || !depositData.monthFor) {
+    showError('❌ Please fill all required fields');
+    const btn2 = document.getElementById('submitBtn');
+    btn2.disabled = false;
+    btn2.textContent = '📤 Submit for Supervisor Approval';
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Submitting...';
+
+  console.log('📤 Submitting deposit | Operator:', operatorId, '| Account:', depositData.accountNo, '| Amount:', depositData.amount);
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      btn.disabled = false;
+      btn.textContent = '📤 Submit for Supervisor Approval';
+
+      if (res.success) {
+        showSuccess(`✅ ${res.message}<br>Entry ID: ${res.entryId}<br>Operator: ${operatorId}`);
+        document.getElementById('depositForm').reset();
+        document.getElementById('depositDate').valueAsDate = new Date();
+      document.getElementById('depositDate').readOnly = true; // ✅ No backdate
+        document.getElementById('balanceDisplay').style.display = 'none';
+        loadAccounts();
+      } else {
+        showError('❌ ' + res.message);
+      }
+    })
+    .withFailureHandler(function(err) {
+      btn.disabled = false;
+      btn.textContent = '📤 Submit for Supervisor Approval';
+      showError('❌ Error: ' + err.message);
+    })
+    // ✅ FIXED: operatorId PEHLE, depositData BAAD MEIN
+    .operatorSubmitDeposit(operatorId, depositData, operatorToken);
+}
+    function showError(msg) {
+      document.getElementById('errorMsg').innerHTML = msg;
+      document.getElementById('errorMsg').style.display = 'block';
+      document.getElementById('successMsg').style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+      document.getElementById('successMsg').innerHTML = msg;
+      document.getElementById('successMsg').style.display = 'block';
+      document.getElementById('errorMsg').style.display = 'none';
+    }
+    
+  </script>
+</body>
+</html>

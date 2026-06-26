@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OPERATOR - Savings Account</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0d7377 0%, #14a085 100%);
+      min-height: 100vh; padding: 20px;
+    }
+    .container {
+      max-width: 650px; margin: 0 auto; background: white;
+      border-radius: 20px; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .header {
+      background: linear-gradient(135deg, #0d7377 0%, #14a085 100%);
+      color: white; padding: 28px 30px; text-align: center;
+    }
+    .header h1 { font-size: 26px; margin-bottom: 8px; }
+    .badge {
+      background: #ff9800; color: white; padding: 6px 18px;
+      border-radius: 20px; font-size: 12px; font-weight: bold;
+      display: inline-block; margin-top: 6px;
+    }
+    .savings-tag {
+      background: rgba(255,255,255,0.2); color: white; padding: 5px 15px;
+      border-radius: 15px; font-size: 12px; display: inline-block; margin-top: 5px;
+    }
+
+    /* Tabs */
+    .txn-tabs {
+      display: flex; border-bottom: 3px solid #e0e0e0; background: #f9f9f9;
+    }
+    .txn-tab {
+      flex: 1; padding: 15px; text-align: center; cursor: pointer;
+      font-weight: bold; font-size: 15px; color: #777;
+      border-bottom: 3px solid transparent; margin-bottom: -3px;
+      transition: all 0.2s;
+    }
+    .txn-tab.active.deposit   { color: #0d7377; border-bottom-color: #0d7377; }
+    .txn-tab.active.withdrawal{ color: #e74c3c; border-bottom-color: #e74c3c; }
+    .txn-tab:hover { background: #f0f0f0; }
+
+    .content { padding: 30px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .form-group { margin-bottom: 22px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 14px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 13px; border: 2px solid #e0e0e0;
+      border-radius: 8px; font-size: 14px; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: #0d7377; outline: none; }
+    .form-group input[readonly] { background: #f8f9fa; color: #666; }
+
+    .balance-card {
+      padding: 16px; border-radius: 10px; margin-bottom: 22px;
+      border-left: 5px solid #0d7377; background: #e8f8f5;
+    }
+    .balance-card .bal-label { font-size: 12px; color: #555; margin-bottom: 4px; }
+    .balance-card .bal-amount { font-size: 24px; font-weight: bold; color: #0d7377; }
+
+    .after-card {
+      padding: 14px; border-radius: 10px; margin-bottom: 20px;
+      border-left: 5px solid #f39c12; background: #fff8e1; display: none;
+    }
+    .after-card .after-label { font-size: 12px; color: #777; }
+    .after-card .after-amount { font-size: 18px; font-weight: bold; }
+    .after-card.negative { border-left-color: #e74c3c; background: #ffebee; }
+    .after-card.negative .after-amount { color: #e74c3c; }
+    .after-card.positive .after-amount { color: #e67e22; }
+
+    .btn {
+      width: 100%; padding: 15px; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px;
+    }
+    .btn-deposit    { background: linear-gradient(135deg, #0d7377 0%, #14a085 100%); color: white; }
+    .btn-withdrawal { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; }
+    .btn:disabled   { background: #ccc !important; cursor: not-allowed; }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); }
+
+    .message { padding: 14px; border-radius: 8px; margin-bottom: 18px; display: none; }
+    .error   { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+    .success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+
+    .alert-info {
+      padding: 14px 18px; border-radius: 8px; margin-bottom: 22px;
+      background: #e8f8f5; border-left: 4px solid #0d7377; color: #0d5c61; font-size: 13px;
+    }
+    .alert-warn {
+      padding: 14px 18px; border-radius: 8px; margin-bottom: 22px;
+      background: #fff3e0; border-left: 4px solid #ff9800; color: #795548; font-size: 13px;
+    }
+    @media (max-width: 500px) { .content { padding: 20px; } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1 id="headerTitle">💰 Savings Account</h1>
+    <div class="badge">🔒 OPERATOR — PENDING APPROVAL</div>
+    <div class="savings-tag">✅ SAVINGS SCHEME ONLY</div>
+  </div>
+
+  <!-- TXN TYPE TABS -->
+  <div class="txn-tabs">
+    <div class="txn-tab active deposit"    id="tabDeposit"    onclick="switchTxnTab('deposit')">
+      ⬇️ Deposit
+    </div>
+    <div class="txn-tab withdrawal" id="tabWithdrawal" onclick="switchTxnTab('withdrawal')">
+      ⬆️ Withdrawal
+    </div>
+  </div>
+
+  <div class="content">
+    <div id="errorMsg"  class="message error"></div>
+    <div id="successMsg" class="message success"></div>
+
+    <!-- Account select — shared -->
+    <div class="form-group">
+      <label>🏦 SAVINGS Account</label>
+      <select id="accountNo" onchange="onAccountChange()">
+        <option value="">-- Loading accounts... --</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>👤 Member Name</label>
+      <input type="text" id="memberName" readonly>
+    </div>
+
+    <div id="balanceCard" class="balance-card" style="display:none;">
+      <div class="bal-label">💳 Current Savings Balance</div>
+      <div class="bal-amount">₹<span id="balanceAmt">0.00</span></div>
+    </div>
+
+    <!-- ===== DEPOSIT PANEL ===== -->
+    <div id="depositPanel" class="tab-panel active">
+      <div class="alert-info">
+        Deposit amount will be submitted for supervisor approval before being credited.
+      </div>
+
+      <div class="form-group">
+        <label>💵 Deposit Amount (₹)</label>
+        <input type="number" id="depositAmount" placeholder="Enter amount"
+               step="0.01" min="1" oninput="calcAfter('deposit')">
+      </div>
+
+      <div id="afterDepCard" class="after-card positive">
+        <div class="after-label">Balance after deposit:</div>
+        <div class="after-amount">₹<span id="afterDepAmt">0.00</span></div>
+      </div>
+
+      <div class="form-group">
+        <label>📅 Date</label>
+        <input type="date" id="depositDate" readonly style="background:#f8f9fa;color:#6c757d;">
+      </div>
+      <div class="form-group">
+        <label>📝 Remarks (optional)</label>
+        <input type="text" id="depositRemarks" placeholder="e.g., Monthly savings" maxlength="100">
+      </div>
+
+      <input type="hidden" id="depEmail">
+      <input type="hidden" id="depUserId">
+
+      <button class="btn btn-deposit" id="btnDeposit" onclick="submitDeposit()">
+        📤 Submit Deposit for Approval
+      </button>
+    </div>
+
+    <!-- ===== WITHDRAWAL PANEL ===== -->
+    <div id="withdrawalPanel" class="tab-panel">
+      <div class="alert-warn">
+        <strong>⚠️ Withdrawal:</strong> Amount will be deducted from savings balance after supervisor approval.
+      </div>
+
+      <div class="form-group">
+        <label>💸 Withdrawal Amount (₹)</label>
+        <input type="number" id="withdrawalAmount" placeholder="Enter amount"
+               step="0.01" min="1" oninput="calcAfter('withdrawal')">
+      </div>
+
+      <div id="afterWdCard" class="after-card positive">
+        <div class="after-label">Balance after withdrawal:</div>
+        <div class="after-amount">₹<span id="afterWdAmt">0.00</span></div>
+      </div>
+
+      <div class="form-group">
+        <label>📅 Date</label>
+        <input type="date" id="withdrawalDate" readonly style="background:#f8f9fa;color:#6c757d;">
+      </div>
+      <div class="form-group">
+        <label>📝 Reason (optional)</label>
+        <input type="text" id="withdrawalRemarks" placeholder="e.g., Emergency withdrawal" maxlength="100">
+      </div>
+
+      <input type="hidden" id="wdEmail">
+      <input type="hidden" id="wdUserId">
+
+      <button class="btn btn-withdrawal" id="btnWithdrawal" onclick="submitWithdrawal()">
+        📤 Submit Withdrawal for Approval
+      </button>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /container -->
+
+<script>
+  var operatorId    = null;
+  var operatorToken = null;
+  var currentBalance = 0;
+  var activeTxnTab   = 'deposit';
+
+  window.addEventListener('load', function() {
+    operatorId    = new URLSearchParams(window.location.search).get('operator') || (window.OPERATOR_ID || null);
+    operatorToken = (new URLSearchParams(window.location.search).get('token'))
+                    ? decodeURIComponent(new URLSearchParams(window.location.search).get('token'))
+                    : (window.OPERATOR_TOKEN || null);
+
+    if (!operatorId) {
+      alert('❌ Operator ID not found! Please login again.');
+      window.close(); return;
+    }
+
+    document.getElementById('headerTitle').innerHTML +=
+      '<br><small style="font-size:13px;opacity:0.9;">Operator: ' + operatorId + '</small>';
+
+    // Set dates readonly
+    var today = new Date();
+    document.getElementById('depositDate').valueAsDate    = today;
+    document.getElementById('withdrawalDate').valueAsDate = today;
+
+    // Branch banner
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.success) {
+          var b = document.createElement('div');
+          b.style.cssText = 'background:linear-gradient(135deg,#0d7377,#14a085);color:white;padding:8px 20px;text-align:center;font-size:13px;';
+          b.innerHTML = '<strong>Operator:</strong> ' + operatorId +
+                        ' &nbsp;|&nbsp; <strong>Branch:</strong> ' + (res.branchCode || '');
+          var c = document.querySelector('.container');
+          c.insertBefore(b, c.firstChild);
+        }
+      })
+      .getOperatorDetails(operatorId);
+
+    loadAccounts();
+  });
+
+  // ── Tab switch ──────────────────────────────────────────────
+  function switchTxnTab(tab) {
+    activeTxnTab = tab;
+    document.getElementById('tabDeposit').classList.toggle('active', tab === 'deposit');
+    document.getElementById('tabWithdrawal').classList.toggle('active', tab === 'withdrawal');
+    document.getElementById('tabDeposit').classList.toggle('deposit', true);
+    document.getElementById('tabWithdrawal').classList.toggle('withdrawal', true);
+    document.getElementById('depositPanel').classList.toggle('active', tab === 'deposit');
+    document.getElementById('withdrawalPanel').classList.toggle('active', tab === 'withdrawal');
+    clearMessages();
+  }
+
+  // ── Load SAVINGS accounts ───────────────────────────────────
+  function loadAccounts() {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        var sel = document.getElementById('accountNo');
+        sel.innerHTML = '<option value="">-- Select SAVINGS Account --</option>';
+        if (res.success && res.accounts && res.accounts.length > 0) {
+          res.accounts.forEach(function(acc) {
+            var opt = document.createElement('option');
+            opt.value           = acc.accountNo;
+            opt.textContent     = acc.accountNo + '  —  ' + acc.name;
+            opt.dataset.name    = acc.name;
+            opt.dataset.email   = acc.email;
+            opt.dataset.userId  = acc.userId;
+            sel.appendChild(opt);
+          });
+        } else {
+          sel.innerHTML = '<option value="">No SAVINGS accounts in your branch</option>';
+        }
+      })
+      .withFailureHandler(function(err) {
+        document.getElementById('accountNo').innerHTML =
+          '<option value="">Error loading accounts</option>';
+        showError('❌ ' + err.message);
+      })
+      .getSavingsAccountsForOperator(operatorId);
+  }
+
+  function onAccountChange() {
+    var sel = document.getElementById('accountNo');
+    var opt = sel.options[sel.selectedIndex];
+
+    if (!opt.value) {
+      document.getElementById('memberName').value       = '';
+      document.getElementById('balanceCard').style.display = 'none';
+      document.getElementById('depEmail').value         = '';
+      document.getElementById('depUserId').value        = '';
+      document.getElementById('wdEmail').value          = '';
+      document.getElementById('wdUserId').value         = '';
+      currentBalance = 0;
+      document.getElementById('afterDepCard').style.display = 'none';
+      document.getElementById('afterWdCard').style.display  = 'none';
+      return;
+    }
+
+    document.getElementById('memberName').value  = opt.dataset.name   || '';
+    document.getElementById('depEmail').value    = opt.dataset.email  || '';
+    document.getElementById('depUserId').value   = opt.dataset.userId || '';
+    document.getElementById('wdEmail').value     = opt.dataset.email  || '';
+    document.getElementById('wdUserId').value    = opt.dataset.userId || '';
+
+    // Load balance
+    google.script.run
+      .withSuccessHandler(function(res) {
+        currentBalance = res.success ? (res.balance || 0) : 0;
+        document.getElementById('balanceAmt').textContent = currentBalance.toFixed(2);
+        document.getElementById('balanceCard').style.display = 'block';
+        calcAfter('deposit');
+        calcAfter('withdrawal');
+      })
+      .getSavingsBalance(opt.value);
+  }
+
+  // ── Live balance preview ────────────────────────────────────
+  function calcAfter(type) {
+    if (type === 'deposit') {
+      var amt  = parseFloat(document.getElementById('depositAmount').value) || 0;
+      var card = document.getElementById('afterDepCard');
+      if (amt > 0) {
+        document.getElementById('afterDepAmt').textContent = (currentBalance + amt).toFixed(2);
+        card.className = 'after-card positive';
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    } else {
+      var wAmt  = parseFloat(document.getElementById('withdrawalAmount').value) || 0;
+      var wCard = document.getElementById('afterWdCard');
+      if (wAmt > 0) {
+        var remaining = currentBalance - wAmt;
+        document.getElementById('afterWdAmt').textContent = remaining.toFixed(2);
+        wCard.className = remaining < 0 ? 'after-card negative' : 'after-card positive';
+        wCard.style.display = 'block';
+      } else {
+        wCard.style.display = 'none';
+      }
+    }
+  }
+
+  // ── Submit deposit ──────────────────────────────────────────
+  function submitDeposit() {
+    var accountNo = document.getElementById('accountNo').value;
+    var amount    = parseFloat(document.getElementById('depositAmount').value) || 0;
+    var date      = document.getElementById('depositDate').value;
+
+    if (!accountNo) { showError('❌ Select an account'); return; }
+    if (!amount || amount <= 0) { showError('❌ Enter a valid deposit amount'); return; }
+
+    var data = {
+      accountNo:  accountNo,
+      name:       document.getElementById('memberName').value,
+      amount:     amount,
+      date:       date,
+      remarks:    document.getElementById('depositRemarks').value.trim(),
+      email:      document.getElementById('depEmail').value,
+      userId:     document.getElementById('depUserId').value,
+      txnType:    'DEPOSIT'
+    };
+
+    var btn = document.getElementById('btnDeposit');
+    btn.disabled = true; btn.textContent = '⏳ Submitting...';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.textContent = '📤 Submit Deposit for Approval';
+        if (res.success) {
+          showSuccess('✅ Deposit submitted!<br><strong>Entry ID:</strong> ' + res.entryId +
+                      '<br>Supervisor approval ke baad balance update hoga.');
+          document.getElementById('depositAmount').value  = '';
+          document.getElementById('depositRemarks').value = '';
+          document.getElementById('afterDepCard').style.display = 'none';
+        } else {
+          showError('❌ ' + res.message);
+        }
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.textContent = '📤 Submit Deposit for Approval';
+        showError('❌ ' + err.message);
+      })
+      .operatorSubmitSavingsDeposit(operatorId, data, operatorToken);
+  }
+
+  // ── Submit withdrawal ───────────────────────────────────────
+  function submitWithdrawal() {
+    var accountNo = document.getElementById('accountNo').value;
+    var amount    = parseFloat(document.getElementById('withdrawalAmount').value) || 0;
+    var date      = document.getElementById('withdrawalDate').value;
+
+    if (!accountNo) { showError('❌ Select an account'); return; }
+    if (!amount || amount <= 0) { showError('❌ Enter a valid withdrawal amount'); return; }
+    if (amount > currentBalance) {
+      showError('❌ Insufficient balance!\n\nAvailable: ₹' + currentBalance.toFixed(2) +
+                '\nRequested: ₹' + amount.toFixed(2));
+      return;
+    }
+
+    var data = {
+      accountNo:  accountNo,
+      name:       document.getElementById('memberName').value,
+      amount:     amount,
+      date:       date,
+      remarks:    document.getElementById('withdrawalRemarks').value.trim(),
+      email:      document.getElementById('wdEmail').value,
+      userId:     document.getElementById('wdUserId').value,
+      txnType:    'WITHDRAWAL'
+    };
+
+    var btn = document.getElementById('btnWithdrawal');
+    btn.disabled = true; btn.textContent = '⏳ Submitting...';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.textContent = '📤 Submit Withdrawal for Approval';
+        if (res.success) {
+          showSuccess('✅ Withdrawal submitted!<br><strong>Entry ID:</strong> ' + res.entryId +
+                      '<br>Supervisor approval ke baad amount deducted hoga.');
+          document.getElementById('withdrawalAmount').value  = '';
+          document.getElementById('withdrawalRemarks').value = '';
+          document.getElementById('afterWdCard').style.display = 'none';
+        } else {
+          showError('❌ ' + res.message);
+        }
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.textContent = '📤 Submit Withdrawal for Approval';
+        showError('❌ ' + err.message);
+      })
+      .operatorSubmitSavingsWithdrawal(operatorId, data, operatorToken);
+  }
+
+  function clearMessages() {
+    document.getElementById('errorMsg').style.display  = 'none';
+    document.getElementById('successMsg').style.display = 'none';
+  }
+  function showError(msg) {
+    var el = document.getElementById('errorMsg');
+    el.textContent = msg; el.style.display = 'block';
+    document.getElementById('successMsg').style.display = 'none';
+  }
+  function showSuccess(msg) {
+    var el = document.getElementById('successMsg');
+    el.innerHTML = msg; el.style.display = 'block';
+    document.getElementById('errorMsg').style.display = 'none';
+  }
+</script>
+</body>
+</html>
